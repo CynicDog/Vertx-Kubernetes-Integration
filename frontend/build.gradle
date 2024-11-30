@@ -59,4 +59,9 @@ jib {
             password = "${System.getenv('GITHUB_TOKEN') ?: 'default_token'}"
         }
     }
+    container {
+        mainClass = 'io.vertx.core.Launcher'
+        args = ['run', 'cynicdog.io.Main', '-cluster']
+        ports = ['8080', '7800']
+    }
 }
