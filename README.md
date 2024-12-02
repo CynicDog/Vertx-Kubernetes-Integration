@@ -17,7 +17,7 @@ The terms `nodes` and `cluster` refer to concepts specific to Vert.x's distribut
 ### A. Create a Kind Cluster
 
 ```bash
-cynicdog@cynicdogui-Mac kind create --name=vertx 
+cynicdog@cynicdogui-Mac ~ % kind create --name=vertx 
 ```
 
 ### B. Apply Kubernetes Resources on the Kind Cluster 
@@ -37,7 +37,7 @@ sudo route add -net 224.0.0.0/5 127.0.0.1
 
 Run the command below in a separate terminal to forward the service port from the cluster to your local machine.
 ```bash
-cynicdog@cynicdogui-Mac Vertx-Kubernetes-Integration % kubectl port-forward service/frontend 8080:80 
+cynicdog@cynicdogui-Mac ~ % kubectl port-forward service/frontend 8080:80 
 ```
 
 ### D. Test EventBus Communication from Pod to Pod with `/hello` Endpoint on the Frontend Service 
