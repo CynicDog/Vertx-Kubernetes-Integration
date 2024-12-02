@@ -39,3 +39,12 @@ Run the command below in a separate terminal to forward the service port from th
 ```bash
 cynicdog@cynicdogui-Mac Vertx-Kubernetes-Integration % kubectl port-forward service/frontend 8080:80 
 ```
+
+#### Test EventBus Communication from Pod to Pod with `/hello` Endpoint on the Frontend Service 
+```
+cynicdog@cynicdogui-Mac ~ % http :8080/hello name=="Vert.x Clustering"
+HTTP/1.1 200 OK
+content-length: 64
+
+Hello Vert.x Clustering from backend-deployment-79b4c7864d-m8th5
+```
