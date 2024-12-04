@@ -4,11 +4,12 @@ plugins {
     id 'com.google.cloud.tools.jib' version '3.4.3'
 }
 
-group = 'cynicdog.io'
+group = 'io.cynicdog'
 version = '1.0-SNAPSHOT'
 
 ext {
     vertxVersion = '4.0.0'
+    hazelcastVersion = '4.5.11'
 }
 
 java {
@@ -23,8 +24,8 @@ repositories {
 
 dependencies {
     implementation("io.vertx:vertx-web:${vertxVersion}")
-    implementation("io.vertx:vertx-infinispan:${vertxVersion}")
     implementation("io.vertx:vertx-health-check:${vertxVersion}")
+    implementation("io.vertx:vertx-hazelcast:${hazelcastVersion}")
 
     testImplementation platform('org.junit:junit-bom:5.10.0')
     testImplementation 'org.junit.jupiter:junit-jupiter'
@@ -53,7 +54,7 @@ jib {
         }
     }
     to {
-        image = "ghcr.io/${System.getenv('GITHUB_REPOSITORY')?.toLowerCase() ?: 'default_repo'}/frontend-infinispan:latest"
+        image = "ghcr.io/${System.getenv('GITHUB_REPOSITORY')?.toLowerCase() ?: 'default_repo'}/backend:latest"
         auth {
             username = "${System.getenv('GITHUB_ACTOR')?.toLowerCase() ?: 'default_actor'}"
             password = "${System.getenv('GITHUB_TOKEN') ?: 'default_token'}"
