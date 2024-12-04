@@ -1,4 +1,4 @@
-name: Frontend Service CI with Gradle & Jib
+name: Infinispan Frontend Service CI with Gradle & Jib
 
 on:
   workflow_dispatch:
