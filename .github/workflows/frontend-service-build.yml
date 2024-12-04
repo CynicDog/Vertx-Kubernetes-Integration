@@ -7,6 +7,7 @@ jobs:
   build:
     env:
       APP_NAME: frontend
+      PROJECT_DIR: clustered-apps-with-infinispan-on-k8s/frontend
     runs-on: ubuntu-latest
 
     steps:
@@ -28,17 +29,17 @@ jobs:
           path: |
             ~/.gradle/caches
             ~/.gradle/wrapper
-          key: ${{ runner.os }}-gradle-${{ hashFiles('frontend/**/*.gradle*', 'frontend/gradle-wrapper.properties') }}
+          key: ${{ runner.os }}-gradle-${{ hashFiles('${{ env.PROJECT_DIR }}/**/*.gradle*', '${{ env.PROJECT_DIR }}/gradle-wrapper.properties') }}
           restore-keys: |
             ${{ runner.os }}-gradle
 
       # Grant execute permission for Gradle wrapper
       - name: Grant execute permission for Gradle wrapper
-        run: chmod +x frontend/gradlew
+        run: chmod +x ${{ env.PROJECT_DIR }}/gradlew
 
       # Run tests
       - name: Run tests
-        run: cd frontend && ./gradlew test
+        run: cd ${{ env.PROJECT_DIR }} && ./gradlew test
 
       # Build and push Docker image using Jib
       - name: Build and push Docker image
@@ -46,4 +47,4 @@ jobs:
           GITHUB_REPOSITORY: ${{ github.repository }}
           GITHUB_ACTOR: ${{ github.actor }}
           GITHUB_TOKEN: ${{ secrets.GHCR_PAT }}
-        run: cd frontend && ./gradlew jib
+        run: cd ${{ env.PROJECT_DIR }} && ./gradlew jib

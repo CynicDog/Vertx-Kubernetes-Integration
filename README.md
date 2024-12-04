@@ -12,7 +12,7 @@ The terms `nodes` and `cluster` refer to concepts specific to Vert.x's distribut
 | **Communication**  | Event-driven messaging on the event bus.                                | Network-based communication between services and containers.      |
 > While Vert.x clusters handle internal messaging and load distribution within Vert.x applications, Kubernetes clusters manage infrastructure-level operations like resource allocation, scaling, and networking for all kinds of applications.
 
-## Run the clustered Vert.x apps on Kind (Kubernetes in Docker)  
+## Run the clustered Vert.x apps managed by Infinispan on Kind (Kubernetes in Docker)  
 
 ### A. Create a Kind Cluster
 
