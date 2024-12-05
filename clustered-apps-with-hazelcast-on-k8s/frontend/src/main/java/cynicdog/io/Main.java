@@ -1,5 +1,6 @@
 package cynicdog.io;
 
+import com.hazelcast.config.Config;
 import io.vertx.core.*;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.impl.logging.Logger;
@@ -9,6 +10,7 @@ import io.vertx.ext.healthchecks.HealthCheckHandler;
 import io.vertx.ext.healthchecks.HealthChecks;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
+import io.vertx.spi.cluster.hazelcast.HazelcastClusterManager;
 
 public class Main extends AbstractVerticle {
 
@@ -50,7 +52,21 @@ public class Main extends AbstractVerticle {
 
     public static void main(String[] args) {
 
-        Vertx.clusteredVertx(new VertxOptions())
+        Config hazelcastConfig = new Config();
+        hazelcastConfig
+                .getNetworkConfig()
+                .getJoin()
+                .getMulticastConfig()
+                .setEnabled(true);
+//        hazelcastConfig
+//                .getNetworkConfig()
+//                .getJoin()
+//                .getKubernetesConfig()
+//                .setEnabled(true);
+
+        Vertx.builder()
+                .withClusterManager(new HazelcastClusterManager(hazelcastConfig))
+                .buildClustered()
                 .compose(v -> v.deployVerticle(new Main()))
                 .onFailure(Throwable::printStackTrace);
     }
