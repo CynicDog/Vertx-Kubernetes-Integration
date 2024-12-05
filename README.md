@@ -1,8 +1,12 @@
 # Vertx Kubernetes Integration 
 
-The terms `nodes` and `cluster` refer to concepts specific to Vert.x's distributed event bus and are different from their meanings in Kubernetes.
+### Index 
+1. [A. Vert.x & Infinispan Cluster Manager on Kind](#a-vertx--infinispan-cluster-manager-on-kind)
+2. [B. Vert.x & Hazelcast Cluster Manager on Kind](#b-vertx--hazelcast-cluster-manager-on-kind)
 
-### Comparison of Terminology: Vert.x vs. Kubernetes 
+## Comparison of Terminology: Vert.x vs. Kubernetes 
+
+The terms `nodes` and `cluster` refer to concepts specific to Vert.x's distributed event bus and are different from their meanings in Kubernetes.
 
 | **Concept**       | **Vert.x**                                                                 | **Kubernetes**                                                    |
 |--------------------|---------------------------------------------------------------------------|-------------------------------------------------------------------|
@@ -51,3 +55,6 @@ Hello Vert.x Clustering from backend-deployment-79b4c7864d-m8th5
 
 </details>
 
+<details><summary><h3>B. Vert.x & Hazelcast Cluster Manager on Kind</h3></summary>
+
+</details>
