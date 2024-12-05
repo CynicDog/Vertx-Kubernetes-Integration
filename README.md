@@ -12,15 +12,15 @@ The terms `nodes` and `cluster` refer to concepts specific to Vert.x's distribut
 | **Communication**  | Event-driven messaging on the event bus.                                | Network-based communication between services and containers.      |
 > While Vert.x clusters handle internal messaging and load distribution within Vert.x applications, Kubernetes clusters manage infrastructure-level operations like resource allocation, scaling, and networking for all kinds of applications.
 
-## Run the clustered Vert.x apps managed by Infinispan on Kind (Kubernetes in Docker)  
+<details><summary><h3>A. Vert.x & Infinispan Cluster Manager on Kind</h3></summary>
 
-### A. Create a Kind Cluster
+### 1. Create a Kind Cluster
 
 ```bash
 cynicdog@cynicdogui-Mac ~ % kind create --name=vertx 
 ```
 
-### B. Apply Kubernetes Resources on the Kind Cluster 
+### 2. Apply Kubernetes Resources on the Kind Cluster 
 
 Place the resource files in the `k8s` directory of this project repository on the control plane before running the following command.
 ```bash
@@ -33,14 +33,14 @@ If pods fail to start with messages like `Vert.x Infinispan getting "failed send
 sudo route add -net 224.0.0.0/5 127.0.0.1
 ```
 
-### C. Port Forward the Service to Local Machine
+### 3. Port Forward the Service to Local Machine
 
 Run the command below in a separate terminal to forward the service port from the cluster to your local machine.
 ```bash
 cynicdog@cynicdogui-Mac ~ % kubectl port-forward service/frontend 8080:80 
 ```
 
-### D. Test EventBus Communication from Pod to Pod with `/hello` Endpoint on the Frontend Service 
+### 4. Test EventBus Communication from Pod to Pod with `/hello` Endpoint on the Frontend Service 
 ```
 cynicdog@cynicdogui-Mac ~ % http :8080/hello name=="Vert.x Clustering"
 HTTP/1.1 200 OK
@@ -48,3 +48,6 @@ content-length: 64
 
 Hello Vert.x Clustering from backend-deployment-79b4c7864d-m8th5
 ```
+
+</details>
+
