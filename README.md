@@ -21,14 +21,14 @@ The terms `nodes` and `cluster` refer to concepts specific to Vert.x's distribut
 ### 1. Create a Kind Cluster
 
 ```bash
-cynicdog@cynicdogui-Mac ~ % kind create --name=vertx 
+cynicdog@cynicdogui-Mac ~ % kind create --name=vertx-infinispan 
 ```
 
 ### 2. Apply Kubernetes Resources on the Kind Cluster 
 
 Place the resource files in the `k8s` directory of this project repository on the control plane before running the following command.
 ```bash
-root@vertx-control-plane:/# kubectl apply -f ./k8s/*.yml
+root@vertx-infinispan-control-plane:/# kubectl apply -f ./k8s/*.yml
 ```
 
 If pods fail to start with messages like `Vert.x Infinispan getting "failed sending discovery request to /228.6.7.8`, enable multicast with:
