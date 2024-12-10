@@ -30,7 +30,7 @@ spec:
                   fieldPath: metadata.name
           ports:
             - containerPort: 8080
-            - containerPort: 7800
+            - containerPort: 5701
           livenessProbe:
             httpGet:
               path: /health
@@ -78,7 +78,7 @@ spec:
               value: "8080"
           ports:
             - containerPort: 8080
-            - containerPort: 7800
+            - containerPort: 5701
           livenessProbe:
             httpGet:
               path: /health

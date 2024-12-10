@@ -56,7 +56,7 @@ public class Main extends AbstractVerticle {
         hazelcastConfig.getNetworkConfig()
                 .getJoin()
                 .getMulticastConfig()
-                .setEnabled(true);
+                .setEnabled(false);
 
         hazelcastConfig
                 .getNetworkConfig()
