@@ -64,7 +64,7 @@ public class Main extends AbstractVerticle {
                 .getKubernetesConfig()
                 .setEnabled(true)
                 .setProperty("namespace", "default")
-                .setProperty("service-name", "clustered-app");
+                .setProperty("service-dns", "clustered-app");
 
         Vertx.builder()
                 .withClusterManager(new HazelcastClusterManager(hazelcastConfig))

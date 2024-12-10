@@ -3,12 +3,13 @@ kind: Service
 metadata:
   name: clustered-app
 spec:
-  type: LoadBalancer
   selector:
     cluster: clustered-app
   ports:
     - name: hazelcast
       port: 5701
+  publishNotReadyAddresses: tru
+  clusterIP: None
 ---
 apiVersion: v1
 kind: Service
@@ -19,6 +20,5 @@ spec:
   selector:
     app: frontend
   ports:
-    - protocol: TCP
-      port: 80
+    - port: 80
       targetPort: 8080
