@@ -28,7 +28,7 @@ dependencies {
     implementation("io.vertx:vertx-hazelcast:${hazelcastVersion}")
 
     // TODO: DNS resolution on MacOS
-    // runtimeOnly 'io.netty:netty-resolver-dns-native-macos:4.1.101.Final:osx-aarch_64'
+    runtimeOnly 'io.netty:netty-resolver-dns-native-macos:4.1.101.Final:osx-aarch_64'
 
     testImplementation platform('org.junit:junit-bom:5.10.0')
     testImplementation 'org.junit.jupiter:junit-jupiter'
