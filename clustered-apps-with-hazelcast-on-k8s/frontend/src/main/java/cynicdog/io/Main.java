@@ -66,7 +66,8 @@ public class Main extends AbstractVerticle {
                 .getKubernetesConfig()
                 .setEnabled(true)
                 .setProperty("namespace", "default")
-                .setProperty("service-dns", "clustered-app");
+                .setProperty("service-dns", "clustered-app")
+                .setProperty("service-dns-timeout", "60");
 
         Vertx.builder()
                 .withClusterManager(new HazelcastClusterManager(hazelcastConfig))

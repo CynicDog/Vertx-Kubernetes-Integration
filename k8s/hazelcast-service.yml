@@ -8,7 +8,7 @@ spec:
   ports:
     - name: hazelcast
       port: 5701
-  publishNotReadyAddresses: tru
+  publishNotReadyAddresses: true
   clusterIP: None
 ---
 apiVersion: v1
@@ -16,9 +16,10 @@ kind: Service
 metadata:
   name: frontend
 spec:
-  type: LoadBalancer
   selector:
     app: frontend
   ports:
-    - port: 80
+    - protocol: TCP
+      port: 80
       targetPort: 8080
+  type: LoadBalancer
