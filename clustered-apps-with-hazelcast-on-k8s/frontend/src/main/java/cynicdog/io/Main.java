@@ -63,12 +63,6 @@ public class Main extends AbstractVerticle {
         hazelcastConfig
                 .getNetworkConfig()
                 .getJoin()
-                .getTcpIpConfig()
-                .setEnabled(false);
-
-        hazelcastConfig
-                .getNetworkConfig()
-                .getJoin()
                 .getKubernetesConfig()
                 .setEnabled(true)
                 .setProperty("namespace", "default")
