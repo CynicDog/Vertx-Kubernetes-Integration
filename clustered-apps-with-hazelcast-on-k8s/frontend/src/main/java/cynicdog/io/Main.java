@@ -53,11 +53,13 @@ public class Main extends AbstractVerticle {
     public static void main(String[] args) {
 
         Config hazelcastConfig = new Config();
+
         hazelcastConfig
                 .getNetworkConfig()
                 .getJoin()
                 .getMulticastConfig()
-                .setEnabled(false);
+                .setEnabled(true);
+
         hazelcastConfig
                 .getNetworkConfig()
                 .getJoin()
@@ -70,7 +72,7 @@ public class Main extends AbstractVerticle {
                 .getKubernetesConfig()
                 .setEnabled(true)
                 .setProperty("namespace", "default")
-                .setProperty("service-dns", "clustered-app");
+                .setProperty("service-name", "clustered-app");
 
         Vertx.builder()
                 .withClusterManager(new HazelcastClusterManager(hazelcastConfig))
