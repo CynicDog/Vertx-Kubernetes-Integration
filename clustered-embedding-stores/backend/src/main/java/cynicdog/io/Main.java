@@ -26,7 +26,6 @@ public class Main extends AbstractVerticle {
 
     private static DefaultCacheManager cacheManager;
     private static ClusterManager clusterManager;
-    private static Cache<String, float[]> embeddingsCache;  // Cache for storing embeddings
 
     @Override
     public void start() throws Exception {
@@ -54,11 +53,8 @@ public class Main extends AbstractVerticle {
                 .memory()
                 .storageType(StorageType.BINARY)
                 .maxSize("1000");
+
         cacheManager.createCache("embeddings", builder.build());
-
-
-        // Initialize the cache for embeddings
-        embeddingsCache = cacheManager.getCache("embeddings");
 
         logger.info("Cluster Manager initialized with shared DefaultCacheManager and embeddings cache.");
     }
@@ -70,7 +66,7 @@ public class Main extends AbstractVerticle {
                 String docId = msg.body().toString();
                 float[] embedding = generateEmbeddingForText(docId);
 
-                embeddingsCache.put(docId, embedding);
+                cacheManager.getCache("embeddings").put(docId, embedding);
 
                 msg.reply("Embedding stored successfully for " + docId);
             } catch (Exception e) {
@@ -80,7 +76,8 @@ public class Main extends AbstractVerticle {
 
         vertx.eventBus().consumer("retrieve-embedding", msg -> {
             String docId = msg.body().toString();
-            float[] embedding = embeddingsCache.get(docId);
+
+            float[] embedding = (float[]) cacheManager.getCache("embeddings").get(docId);
 
             if (embedding != null) {
                 msg.reply(Arrays.toString(embedding));  // Reply with embedding as a string
