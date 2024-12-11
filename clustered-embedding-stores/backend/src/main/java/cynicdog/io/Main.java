@@ -80,7 +80,7 @@ public class Main extends AbstractVerticle {
             float[] embedding = (float[]) cacheManager.getCache("embeddings").get(docId);
 
             if (embedding != null) {
-                msg.reply(String.format("From%s\n%s", msg.body(), POD_NAME, Arrays.toString(embedding)));
+                msg.reply(String.format("From%s\n%s", POD_NAME, Arrays.toString(embedding)));
             } else {
                 msg.reply("No embedding found for " + docId);
             }
