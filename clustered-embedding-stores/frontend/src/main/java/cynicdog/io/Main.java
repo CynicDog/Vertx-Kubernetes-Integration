@@ -52,7 +52,10 @@ public class Main extends AbstractVerticle {
         vertx.eventBus().<String>request("greetings", context.queryParams().get("name"))
                 .map(Message::body)
                 .onSuccess(reply -> context.response().end(reply))
-                .onFailure(context::fail);
+                .onFailure(err -> {
+                    logger.error(err);
+                    context.fail(err);
+                });
     }
 
     private void handleStoreEmbeddingRequest(RoutingContext context) {
