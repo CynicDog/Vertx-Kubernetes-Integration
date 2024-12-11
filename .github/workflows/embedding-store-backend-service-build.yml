@@ -1,4 +1,4 @@
-name: Hazelcast Frontend Service CI with Gradle & Jib
+name: Embedding Store Backend Service CI with Gradle & Jib
 
 on:
   workflow_dispatch:
@@ -6,8 +6,8 @@ on:
 jobs:
   build:
     env:
-      APP_NAME: frontend
-      PROJECT_DIR: clustered-apps-with-hazelcast-on-k8s/frontend
+      APP_NAME: backend
+      PROJECT_DIR: clustered-embedding-stores/backend
     runs-on: ubuntu-latest
 
     steps:
