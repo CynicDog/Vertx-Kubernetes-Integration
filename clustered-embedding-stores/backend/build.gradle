@@ -1,0 +1,68 @@
+plugins {
+    id 'java'
+    id 'application'
+    id 'com.google.cloud.tools.jib' version '3.4.3'
+}
+
+group = 'cynicdog.io'
+version = '1.0-SNAPSHOT'
+
+ext {
+    vertxVersion = '4.0.0'
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(20)
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation("io.vertx:vertx-web:${vertxVersion}")
+    implementation("io.vertx:vertx-infinispan:${vertxVersion}")
+    implementation("io.vertx:vertx-health-check:${vertxVersion}")
+
+    testImplementation 'org.infinispan:infinispan-commons:15.0.0.Final'
+    testImplementation platform('org.junit:junit-bom:5.10.0')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+}
+
+application {
+    mainClass = 'cynicdog.io.Main'
+}
+
+test {
+    useJUnitPlatform()
+}
+
+jib {
+    from {
+        image = 'eclipse-temurin:20'
+        platforms {
+            platform {
+                os = "linux"
+                architecture = "arm64"
+            }
+            platform {
+                os = "linux"
+                architecture = "amd64"
+            }
+        }
+    }
+    to {
+        image = "ghcr.io/${System.getenv('GITHUB_REPOSITORY')?.toLowerCase() ?: 'default_repo'}/backend-infinispan:latest"
+        auth {
+            username = "${System.getenv('GITHUB_ACTOR')?.toLowerCase() ?: 'default_actor'}"
+            password = "${System.getenv('GITHUB_TOKEN') ?: 'default_token'}"
+        }
+    }
+    container {
+        mainClass = 'io.vertx.core.Launcher'
+        args = ['run', 'cynicdog.io.Main', '-cluster']
+        ports = ['8080', '7800']
+    }
+}
