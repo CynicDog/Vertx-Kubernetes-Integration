@@ -28,7 +28,7 @@ public class Main extends AbstractVerticle {
     private static final Logger logger = LoggerFactory.getLogger(Main.class);
     private static DefaultCacheManager cacheManager;
     private static ClusterManager clusterManager;
-    private Cache<String, float[]> embeddingsCache;
+    private Cache<String, OllamaAPI.Embedding> embeddingsCache;
     private WebClient client;
 
     @Override

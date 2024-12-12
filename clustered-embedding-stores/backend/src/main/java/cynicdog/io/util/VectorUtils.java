@@ -1,15 +1,16 @@
 package cynicdog.io.util;
 
+import cynicdog.io.api.OllamaAPI;
 import org.infinispan.Cache;
 
 public class VectorUtils {
 
-    public static String retrieveRelevantData(float[] embeddings, Cache<String, float[]> collection) {
+    public static String retrieveRelevantDocument(float[] embeddings, Cache<String, OllamaAPI.Embedding> collection) {
         String closestKey = null;
         double maxSimilarity = -1;
 
         for (String cacheKey : collection.keySet()) {
-            float[] cachedEmbeddings = collection.get(cacheKey);
+            float[] cachedEmbeddings = collection.get(cacheKey).getLatentScores();
 
             double similarity = calculateCosineSimilarity(embeddings, cachedEmbeddings);
             if (similarity > maxSimilarity) {
@@ -17,10 +18,7 @@ public class VectorUtils {
                 closestKey = cacheKey;
             }
         }
-
-        // TODO: Get the document data associated with the embedding key
-        // Data associated with key: 451439790 ..
-        return closestKey != null ? "Data associated with key: " + closestKey : "No relevant data found.";
+        return closestKey != null ? collection.get(closestKey).getDocument() : "No relevant data found.";
     }
 
     public static double calculateCosineSimilarity(float[] vectorA, float[] vectorB) {
