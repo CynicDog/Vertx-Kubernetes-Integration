@@ -12,18 +12,17 @@ import io.vertx.ext.cluster.infinispan.InfinispanClusterManager;
 import io.vertx.ext.healthchecks.HealthCheckHandler;
 import io.vertx.ext.healthchecks.HealthChecks;
 import io.vertx.ext.web.Router;
+import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.client.WebClient;
-import io.vertx.ext.web.client.WebClientOptions;
 import io.vertx.ext.web.codec.BodyCodec;
+import io.vertx.ext.web.handler.BodyHandler;
 import org.infinispan.Cache;
 import org.infinispan.commons.dataconversion.MediaType;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
-import org.infinispan.configuration.cache.StorageType;
 import org.infinispan.manager.DefaultCacheManager;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import static cynicdog.io.util.EmbeddingUtils.retrieveRelevantData;
+
 
 public class Main extends AbstractVerticle {
 
@@ -31,15 +30,31 @@ public class Main extends AbstractVerticle {
 
     private static final int HTTP_PORT = Integer.parseInt(System.getenv().getOrDefault("HTTP_PORT", "8080"));
     private static final String POD_NAME = System.getenv().getOrDefault("POD_NAME", "unknown");
-    private static final String OLLAMA_URL = "http://localhost:11434/api/generate";
 
     private static DefaultCacheManager cacheManager;
     private static ClusterManager clusterManager;
 
+    private static Cache<String, float[]> embeddingsCache;
+
+    private WebClient client;
+
     @Override
     public void start() throws Exception {
-        setupClusterManager();
-        registerConsumer();
+
+        client = WebClient.create(vertx);
+        cacheManager = new DefaultCacheManager();
+        clusterManager = new InfinispanClusterManager(cacheManager);
+
+        // Configure the cache for embeddings
+        ConfigurationBuilder builder = new ConfigurationBuilder();
+        builder.encoding()
+                .mediaType(MediaType.APPLICATION_OBJECT_TYPE)
+                .memory();
+
+        // Initialize the cache for embeddings
+        embeddingsCache = cacheManager.createCache("embeddings", builder.build());
+
+        pullOllamaModels();
 
         Router router = Router.router(vertx);
         setupRouter(router);
@@ -50,112 +65,109 @@ public class Main extends AbstractVerticle {
                 .onSuccess(server -> logger.info("HTTP server started on port " + server.actualPort()));
     }
 
-    private void setupClusterManager() {
-        cacheManager = new DefaultCacheManager();
-        clusterManager = new InfinispanClusterManager(cacheManager);
+    private void pullOllamaModels() {
+        String[] models = {"mxbai-embed-large:latest", "qwen:1.8b"};
 
-        // Configure the cache for embeddings
-        ConfigurationBuilder builder = new ConfigurationBuilder();
-        builder.encoding()
-                .mediaType(MediaType.APPLICATION_OBJECT_TYPE)
-                .memory()
-                .storageType(StorageType.BINARY)
-                .maxSize("1000");
-
-        cacheManager.createCache("embeddings", builder.build());
-
-        logger.info("Cluster Manager initialized with shared DefaultCacheManager and embeddings cache.");
-    }
-
-    private void registerConsumer() {
-
-        vertx.eventBus().consumer("store-embedding", msg -> {
-            try {
-                String docId = msg.body().toString();
-                float[] embedding = generateEmbeddingForText(docId);
-
-                cacheManager.getCache("embeddings").put(docId, embedding);
-
-                msg.reply("Embedding stored successfully for " + docId);
-            } catch (Exception e) {
-                msg.fail(500, "Failed to store embedding: " + e.getMessage());
-            }
-        });
-
-        vertx.eventBus().consumer("retrieve-embedding", msg -> {
-            String docId = msg.body().toString();
-
-            float[] embedding = (float[]) cacheManager.getCache("embeddings").get(docId);
-
-            if (embedding != null) {
-                msg.reply(String.format("From %s\n%s", POD_NAME, Arrays.toString(embedding)));
-            } else {
-                msg.reply("No embedding found for " + docId);
-            }
-        });
-
-        vertx.eventBus().<String>consumer("greetings", msg -> {
-            // Call Ollama to get the response
-            sendOllamaRequest(msg.body().toString()).onComplete(res -> {
-                if (res.succeeded()) {
-                    String ollamaResponse = res.result();
-                    msg.reply(String.format("Hello %s from %s.\nOllama says: %s", msg.body(), POD_NAME, ollamaResponse));
-                } else {
-                    msg.fail(500, "Failed to get response from Ollama: " + res.cause().getMessage());
-                }
-            });
-        });
+        for (String model : models) {
+            client.post(11434, "localhost", "/api/pull")
+                    .sendJsonObject(new JsonObject().put("model", model))
+                    .onSuccess(res -> logger.info("Model " + model + " pulled."))
+                    .onFailure(err -> logger.error("Embedding request failed: ", err));
+        }
     }
 
     private void setupRouter(Router router) {
-        router.get("/health").handler(context -> context.response().end("OK"));
 
         HealthChecks checks = HealthChecks
                 .create(vertx)
                 .register("cluster-health", ClusterHealthCheck.createProcedure(vertx, false));
 
+        router.route().handler(BodyHandler.create());
+
+        router.get("/health").handler(context -> context.response().end("OK"));
         router.get("/readiness").handler(HealthCheckHandler.createWithHealthChecks(checks));
+
+        router.post("/embed").handler(this::handleEmbedRequest);
+        router.post("/generate").handler(this::handleGenerateRequest);
     }
 
-    // TODO: Embedding model integration
-    private float[] generateEmbeddingForText(String text) {
-        // Example: a simple dummy function that generates an embedding (replace with LLM generation logic)
-        float[] embedding = new float[10];
-        for (int i = 0; i < embedding.length; i++) {
-            embedding[i] = text.hashCode() % 10 + i;
-        }
-        return embedding;
-    }
+    // TODO: handle multiple sentences
+    private void handleEmbedRequest(RoutingContext context) {
+        String prompt = context.getBodyAsJson().getString("prompt");
+        client.post(11434, "localhost", "/api/embeddings")
+                .sendJsonObject(new JsonObject()
+                        .put("model", "mxbai-embed-large:latest")
+                        .put("prompt", prompt))
+                .onSuccess(res -> {
 
-    private Future<String> sendOllamaRequest(String name) {
+                    JsonArray embeddingsJson = res.bodyAsJsonObject().getJsonArray("embedding");
 
-        Promise<String> promise = Promise.promise();
-        WebClient client = WebClient.create(vertx, new WebClientOptions().setDefaultPort(11434).setDefaultHost("localhost"));
+                    float[] embeddings = new float[embeddingsJson.size()];
+                    for (int i = 0; i < embeddingsJson.size(); i++) {
+                        embeddings[i] = embeddingsJson.getFloat(i);
+                    }
 
-        List<String> res = new ArrayList<>();
-        JsonParser parser = JsonParser.newParser().objectValueMode();
-        parser.handler(event -> {
-            JsonObject object = event.objectValue();
-            res.add(object.encode());
-        });
+                    String key = Integer.toString(prompt.hashCode());
 
-        var body = new JsonObject()
-                .put("model", "qwen:1.8b")
-                .put("prompt", "Why is the sky blue?");
+                    // Store the embeddings in the cache
+                    embeddingsCache.put(key, embeddings);
 
-        // http --stream POST :11434/api/generate model="qwen2.5:3b" prompt="Why is the sky blue?"
-        client.post(11434, "localhost", "/api/generate")
-                .as(BodyCodec.jsonStream(parser))
-                .sendJsonObject(body)
-                .onSuccess(response -> {
-                    promise.complete(res.toString());
+                    logger.info("Embedding entry stored with key: " + key);
+                    context.response().end();
                 })
                 .onFailure(err -> {
-                    logger.error(err);
-                    promise.fail(err);
+                    logger.error("Embedding request failed: ", err);
+                    context.response().setStatusCode(500).end("Failed to generate embeddings.");
                 });
+    }
 
-        return promise.future();
+    private void handleGenerateRequest(RoutingContext context) {
+        String prompt = context.getBodyAsJson().getString("prompt");
+        client.post(11434, "localhost", "/api/embeddings")
+                .sendJsonObject(new JsonObject()
+                        .put("model", "mxbai-embed-large:latest")
+                        .put("prompt", prompt))
+                .onSuccess(res -> {
+                    JsonArray embeddingsJson = res.bodyAsJsonObject().getJsonArray("embedding");
+                    float[] embeddings = new float[embeddingsJson.size()];
+                    for (int i = 0; i < embeddingsJson.size(); i++) {
+                        embeddings[i] = embeddingsJson.getFloat(i);
+                    }
+
+                    String data = retrieveRelevantData(embeddings, embeddingsCache, context, prompt);
+
+                    context.response().setChunked(true);
+                    JsonParser parser = JsonParser.newParser().objectValueMode();
+                    parser.handler(event -> {
+
+                        JsonObject json = event.objectValue();
+                        String content = json.getString("response");
+                        boolean done = json.getBoolean("done", false);
+
+                        context.response().write(content);
+
+                        if (done) {
+                            context.response().end(String.format("\n\nFrom - %s", POD_NAME));
+                        }
+                    });
+
+                    parser.exceptionHandler(err -> {
+                        logger.error("JSON streaming failed", err);
+                    });
+
+                    client.post(11434, "localhost", "/api/generate")
+                            .as(BodyCodec.jsonStream(parser))
+                            .sendJsonObject(new JsonObject()
+                                    .put("model", "qwen:1.8b")
+                                    .put("prompt", String.format("Using this data: %s, respond to this prompt: %s", data, prompt)))
+                            .onFailure(err -> {
+                                logger.error("Failed to connect to Ollama", err);
+                            });
+                })
+                .onFailure(err -> {
+                    logger.error("Generate request failed: ", err);
+                    context.response().setStatusCode(500).end("Failed to generate response.");
+                });
     }
 
     public static void main(String[] args) {
