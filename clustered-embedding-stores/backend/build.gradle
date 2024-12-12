@@ -23,6 +23,7 @@ repositories {
 
 dependencies {
     implementation("io.vertx:vertx-web:${vertxVersion}")
+    implementation("io.vertx:vertx-web-client:${vertxVersion}")
     implementation("io.vertx:vertx-infinispan:${vertxVersion}")
     implementation("io.vertx:vertx-health-check:${vertxVersion}")
 

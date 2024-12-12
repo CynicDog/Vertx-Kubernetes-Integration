@@ -33,12 +33,6 @@ public class Main extends AbstractVerticle {
         // http :8080/hello name=="Vert.x Clustering"
         router.get("/hello").handler(this::handleHelloRequest);
 
-        // http POST :8080/store-embedding docId=="doc1"
-        router.post("/store-embedding").handler(this::handleStoreEmbeddingRequest);
-
-        // http :8080/retrieve-embedding docId=="doc1"
-        router.get("/retrieve-embedding").handler(this::handleRetrieveEmbeddingRequest);
-
         router.get("/health").handler(context -> context.response().end("OK"));
 
         HealthChecks checks = HealthChecks
@@ -52,36 +46,9 @@ public class Main extends AbstractVerticle {
         vertx.eventBus().<String>request("greetings", context.queryParams().get("name"))
                 .map(Message::body)
                 .onSuccess(reply -> context.response().end(reply))
-                .onFailure(context::fail);
-    }
-
-    private void handleStoreEmbeddingRequest(RoutingContext context) {
-        String docId = context.request().getParam("docId");
-        if (docId == null || docId.isEmpty()) {
-            context.response().setStatusCode(400).end("Document ID is required");
-            return;
-        }
-
-        vertx.eventBus().<String>request("store-embedding", docId)
-                .onSuccess(reply -> context.response().end(reply.body()))
                 .onFailure(err -> {
-                    logger.error("Failed to store embedding", err);
-                    context.response().setStatusCode(500).end("Failed to store embedding");
-                });
-    }
-
-    private void handleRetrieveEmbeddingRequest(RoutingContext context) {
-        String docId = context.request().getParam("docId");
-        if (docId == null || docId.isEmpty()) {
-            context.response().setStatusCode(400).end("Document ID is required");
-            return;
-        }
-
-        vertx.eventBus().<String>request("retrieve-embedding", docId)
-                .onSuccess(reply -> context.response().end(reply.body()))
-                .onFailure(err -> {
-                    logger.error("Failed to retrieve embedding", err);
-                    context.response().setStatusCode(500).end("Failed to retrieve embedding");
+                    logger.error(err);
+                    context.fail(err);
                 });
     }
 
