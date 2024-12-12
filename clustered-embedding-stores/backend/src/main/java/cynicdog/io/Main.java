@@ -4,7 +4,6 @@ import cynicdog.io.api.OllamaAPI;
 import io.vertx.core.*;
 import io.vertx.core.impl.logging.Logger;
 import io.vertx.core.impl.logging.LoggerFactory;
-import io.vertx.core.json.JsonObject;
 import io.vertx.core.spi.cluster.ClusterManager;
 import io.vertx.ext.cluster.infinispan.ClusterHealthCheck;
 import io.vertx.ext.cluster.infinispan.InfinispanClusterManager;
