@@ -6,8 +6,9 @@ spec:
   selector:
     cluster: clustered-app
   ports:
-    - name: hazelcast
-      port: 5701
+    - name: jgroups
+      port: 7800
+      protocol: TCP
   publishNotReadyAddresses: true
   clusterIP: None
 ---
