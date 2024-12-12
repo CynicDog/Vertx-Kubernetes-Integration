@@ -5,7 +5,7 @@ import org.infinispan.Cache;
 
 public class EmbeddingUtils {
 
-    public static String retrieveRelevantData(float[] embeddings, Cache<String, float[]> collection, RoutingContext context, String prompt) {
+    public static String retrieveRelevantData(float[] embeddings, Cache<String, float[]> collection) {
         String closestKey = null;
         double maxSimilarity = -1;
 
