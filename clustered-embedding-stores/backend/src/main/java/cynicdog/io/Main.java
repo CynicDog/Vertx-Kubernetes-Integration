@@ -134,7 +134,7 @@ public class Main extends AbstractVerticle {
                         embeddings[i] = embeddingsJson.getFloat(i);
                     }
 
-                    String data = retrieveRelevantData(embeddings, embeddingsCache, context, prompt);
+                    String data = retrieveRelevantData(embeddings, embeddingsCache);
 
                     context.response().setChunked(true);
                     JsonParser parser = JsonParser.newParser().objectValueMode();
