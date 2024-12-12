@@ -1,9 +1,8 @@
 package cynicdog.io.util;
 
-import io.vertx.ext.web.RoutingContext;
 import org.infinispan.Cache;
 
-public class EmbeddingUtils {
+public class VectorUtils {
 
     public static String retrieveRelevantData(float[] embeddings, Cache<String, float[]> collection) {
         String closestKey = null;
