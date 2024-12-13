@@ -38,6 +38,7 @@ public class Main extends AbstractVerticle {
                 new GlobalConfigurationBuilder()
                         .transport()
                         .defaultTransport()
+                        .addProperty("configurationFile", "default-configs/default-jgroups-kubernetes.xml")
                         .build()
         );
         clusterManager = new InfinispanClusterManager(cacheManager);
@@ -53,7 +54,6 @@ public class Main extends AbstractVerticle {
         // Ensure embeddings cache is created only if not already present
         if (!cacheManager.cacheExists("embeddings")) {
             cacheManager.administration()
-                    .withFlags(CacheContainerAdmin.AdminFlag.VOLATILE)
                     .getOrCreateCache("embeddings", builder.build());
         }
 
