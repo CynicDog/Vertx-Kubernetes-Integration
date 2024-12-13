@@ -1,6 +1,9 @@
 name: Embedding Store Backend Service CI with Gradle & Jib
 
 on:
+  push:
+    branches:
+      - main
   workflow_dispatch:
 
 jobs:
