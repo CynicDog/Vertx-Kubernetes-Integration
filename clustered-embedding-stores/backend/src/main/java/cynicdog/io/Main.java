@@ -29,13 +29,10 @@ public class Main extends AbstractVerticle {
     private static final Logger logger = LoggerFactory.getLogger(Main.class);
     private static DefaultCacheManager cacheManager;
     private static ClusterManager clusterManager;
-    private Cache<String, OllamaAPI.Embedding> embeddingsCache;
-    private WebClient client;
 
     @Override
     public void start() throws Exception {
 
-        client = WebClient.create(vertx);
         cacheManager = new DefaultCacheManager();
         clusterManager = new InfinispanClusterManager(cacheManager);
 
@@ -45,8 +42,8 @@ public class Main extends AbstractVerticle {
                 .mediaType(MediaType.APPLICATION_OBJECT_TYPE)
                 .memory();
 
-        // Initialize the cache for embeddings
-        if (cacheManager.getCache("embeddings") == null) {
+        // Ensure embeddings cache is created only if not already present
+        if (!cacheManager.cacheExists("embeddings")) {
             cacheManager.createCache("embeddings", builder.build());
         }
 
