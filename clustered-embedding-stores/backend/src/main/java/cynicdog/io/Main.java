@@ -46,10 +46,12 @@ public class Main extends AbstractVerticle {
                 .memory();
 
         // Initialize the cache for embeddings
-        embeddingsCache = cacheManager.createCache("embeddings", builder.build());
+        if (cacheManager.getCache("embeddings") == null) {
+            cacheManager.createCache("embeddings", builder.build());
+        }
 
         // Initialize Ollama API
-        var OllamaAPI = new OllamaAPI(vertx, OLLAMA_HOST, OLLAMA_PORT, embeddingsCache);
+        var OllamaAPI = new OllamaAPI(vertx, OLLAMA_HOST, OLLAMA_PORT, cacheManager.getCache("embeddings"));
 
         // Register router handlers
         Router router = Router.router(vertx);
