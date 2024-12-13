@@ -38,7 +38,6 @@ public class Main extends AbstractVerticle {
                 new GlobalConfigurationBuilder()
                         .transport()
                         .defaultTransport()
-                        .globalState()
                         .build()
         );
         clusterManager = new InfinispanClusterManager(cacheManager);
