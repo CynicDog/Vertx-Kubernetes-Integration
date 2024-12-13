@@ -1,6 +1,7 @@
 package cynicdog.io;
 
 import io.vertx.core.*;
+import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.impl.logging.Logger;
 import io.vertx.core.impl.logging.LoggerFactory;
@@ -51,7 +52,8 @@ public class Main extends AbstractVerticle {
 
         String prompt = context.getBodyAsJson().getString("prompt");
 
-        vertx.eventBus().<String>request(address, prompt)
+        // Set response timeout from embedding server to 40 seconds
+        vertx.eventBus().<String>request(address, prompt, new DeliveryOptions().setSendTimeout(40000))
                 .map(Message::body)
                 .onSuccess(reply -> context.response().end(reply))
                 .onFailure(context::fail);
