@@ -10,9 +10,8 @@ import io.vertx.ext.cluster.infinispan.InfinispanClusterManager;
 import io.vertx.ext.healthchecks.HealthCheckHandler;
 import io.vertx.ext.healthchecks.HealthChecks;
 import io.vertx.ext.web.Router;
-import io.vertx.ext.web.client.WebClient;
-import org.infinispan.Cache;
 import org.infinispan.commons.dataconversion.MediaType;
+import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.manager.DefaultCacheManager;
 
@@ -38,7 +37,8 @@ public class Main extends AbstractVerticle {
 
         // Configure the cache for embeddings
         ConfigurationBuilder builder = new ConfigurationBuilder();
-        builder.encoding()
+        builder.clustering().cacheMode(CacheMode.DIST_SYNC)
+                .encoding()
                 .mediaType(MediaType.APPLICATION_OBJECT_TYPE)
                 .memory();
 
