@@ -46,7 +46,7 @@ public class Main extends AbstractVerticle {
         // Configure the cache for embeddings
         ConfigurationBuilder builder = new ConfigurationBuilder();
         builder.clustering()
-                .cacheMode(CacheMode.DIST_SYNC)
+                .cacheMode(CacheMode.REPL_SYNC)
                 .encoding()
                 .mediaType(MediaType.APPLICATION_OBJECT_TYPE)
                 .memory();
