@@ -2,7 +2,7 @@
 
 ### Index 
 1. [A. Vert.x & Infinispan Cluster Manager on Kind](#a-vertx--infinispan-cluster-manager-on-kind)
-2. [B. Vert.x & Hazelcast Cluster Manager on Kind](#b-vertx--hazelcast-cluster-manager-on-kind)
+2. [B. Clustered Embedding Server on Kind with Ollama](#b-clustered-embedding-server-on-kind-with-ollama)
 
 ## Comparison of Terminology: Vert.x vs. Kubernetes 
 
@@ -57,7 +57,7 @@ Hello Vert.x Clustering from backend-deployment-79b4c7864d-m8th5
 
 </details>
 
-<details><summary><h3>B. Vert.x & Hazelcast Cluster Manager on Kind</h3></summary>
+<details><summary><h3>B. Clustered Embedding Server on Kind with Ollama</h3></summary>
 
 👆 [back to index](#index)
 
