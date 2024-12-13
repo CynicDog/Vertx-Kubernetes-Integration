@@ -89,7 +89,7 @@ public class OllamaAPI {
                     }
                     String document = retrieveRelevantDocument(embeddings, collection);
 
-                    client.post(11434, "localhost", "/api/generate")
+                    client.post(port, host, "/api/generate")
                             .sendJsonObject(new JsonObject()
                                     .put("model", "qwen:1.8b")
                                     .put("prompt", String.format("Using this data: %s, respond to this prompt: %s", document, prompt))
