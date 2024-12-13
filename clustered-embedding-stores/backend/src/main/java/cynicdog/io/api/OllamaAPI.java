@@ -1,14 +1,13 @@
 package cynicdog.io.api;
 
+import io.vertx.core.Future;
+import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.impl.logging.Logger;
 import io.vertx.core.impl.logging.LoggerFactory;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.parsetools.JsonParser;
-import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.client.WebClient;
-import io.vertx.ext.web.codec.BodyCodec;
 import org.infinispan.Cache;
 
 import static cynicdog.io.Main.POD_NAME;
@@ -35,17 +34,18 @@ public class OllamaAPI {
         String[] models = {"mxbai-embed-large:latest", "qwen:1.8b"};
 
         for (String model : models) {
-            client.post(11434, "localhost", "/api/pull")
+            client.post(port, host, "/api/pull")
                     .sendJsonObject(new JsonObject().put("model", model))
                     .onSuccess(res -> logger.info("Model " + model + " pulled."))
                     .onFailure(err -> logger.error("Embedding request failed: ", err));
         }
     }
 
-    public void embed(RoutingContext context) {
+    public Future<String> embed(String prompt) {
 
-        String prompt = context.getBodyAsJson().getString("prompt");
-        client.post(11434, "localhost", "/api/embeddings")
+        Promise<String> promise = Promise.promise();
+
+        client.post(port, host, "/api/embeddings")
                 .sendJsonObject(new JsonObject()
                         .put("model", "mxbai-embed-large:latest")
                         .put("prompt", prompt))
@@ -55,7 +55,6 @@ public class OllamaAPI {
                     for (int i = 0; i < embeddingsJson.size(); i++) {
                         latentScores[i] = embeddingsJson.getFloat(i);
                     }
-
                     String key = Integer.toString(prompt.hashCode());
 
                     // Store the embeddings in the cache
@@ -63,19 +62,22 @@ public class OllamaAPI {
 
                     var message = "Embedding entry stored with key: " + key;
                     logger.info(message);
-                    context.response().end(message);
+                    promise.complete(message);
                 })
                 .onFailure(err -> {
                     var message = "Embedding request failed: " + err.getMessage();
                     logger.error(message);
-                    context.response().setStatusCode(500).end(message);
+                    promise.fail(message);
                 });
+
+        return promise.future();
     }
 
-    public void generate(RoutingContext context) {
+    public Future<String> generate(String prompt) {
 
-        String prompt = context.getBodyAsJson().getString("prompt");
-        client.post(11434, "localhost", "/api/embeddings")
+        Promise<String> promise = Promise.promise();
+
+        client.post(port, host, "/api/embeddings")
                 .sendJsonObject(new JsonObject()
                         .put("model", "mxbai-embed-large:latest")
                         .put("prompt", prompt))
@@ -85,41 +87,30 @@ public class OllamaAPI {
                     for (int i = 0; i < embeddingsJson.size(); i++) {
                         embeddings[i] = embeddingsJson.getFloat(i);
                     }
-
                     String document = retrieveRelevantDocument(embeddings, collection);
 
-                    context.response().setChunked(true);
-                    JsonParser parser = JsonParser.newParser().objectValueMode();
-                    parser.handler(event -> {
-
-                        JsonObject json = event.objectValue();
-                        String content = json.getString("response");
-                        boolean done = json.getBoolean("done", false);
-
-                        context.response().write(content);
-
-                        if (done) {
-                            context.response().end(String.format("\n\nFrom: %s.\nReferenced document: %s.", POD_NAME, document));
-                        }
-                    });
-                    parser.exceptionHandler(err -> {
-                        logger.error("JSON streaming failed", err);
-                    });
-
                     client.post(11434, "localhost", "/api/generate")
-                            .as(BodyCodec.jsonStream(parser))
                             .sendJsonObject(new JsonObject()
                                     .put("model", "qwen:1.8b")
-                                    .put("prompt", String.format("Using this data: %s, respond to this prompt: %s", document, prompt)))
+                                    .put("prompt", String.format("Using this data: %s, respond to this prompt: %s", document, prompt))
+                                    .put("stream", false))
+                            .onSuccess(success -> {
+                                var response = success.bodyAsJsonObject().getString("response");
+                                response += String.format("\n\nFrom: %s.\nReferenced document: %s.", POD_NAME, document);
+
+                                promise.complete(response);
+                            })
                             .onFailure(err -> {
                                 logger.error("Failed to connect to Ollama", err);
+                                promise.fail(err);
                             });
                 })
                 .onFailure(err -> {
-                    var message = "Generate request failed: " + err.getMessage();
-                    logger.error(message);
-                    context.response().setStatusCode(500).end(message);
+                    logger.error("Generate request failed: " + err.getMessage());
+                    promise.fail(err);
                 });
+
+        return promise.future();
     }
 
     public static class Embedding {
