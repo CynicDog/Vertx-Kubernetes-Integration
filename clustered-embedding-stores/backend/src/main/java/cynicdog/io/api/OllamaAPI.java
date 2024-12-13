@@ -60,7 +60,7 @@ public class OllamaAPI {
                     // Store the embeddings in the cache
                     collection.put(key, new Embedding(latentScores, prompt));
 
-                    var message = String.format("Embedding entry stored with key: %s (Collection Size: %d).", key, collection.size());
+                    var message = String.format("Embedding entry stored with key: %s \nFrom: %s (Collection Size: %d)", key, POD_NAME, collection.size());
                     logger.info(message);
                     promise.complete(message);
                 })
@@ -80,7 +80,7 @@ public class OllamaAPI {
         try {
             collection.evict(key);
 
-            var message = String.format("Embedding entry evicted with key: %s (Collection Size: %d).", key, collection.size());
+            var message = String.format("Embedding entry evicted with key: %s \nFrom: %s (Collection Size: %d)", key, POD_NAME, collection.size());
             logger.info(message);
             promise.complete(message);
         } catch (Exception e) {
@@ -98,7 +98,7 @@ public class OllamaAPI {
             for (String cacheKey : collection.keySet()) {
                 collection.evict(cacheKey);
             }
-            var message = String.format("All embedding entries evicted (Collection Size: %d).", collection.size());
+            var message = String.format("All embedding entries evicted \nFrom: %s (Collection Size: %d)", POD_NAME, collection.size());
             logger.info(message);
             promise.complete(message);
         } catch (Exception e) {
@@ -131,7 +131,7 @@ public class OllamaAPI {
                                     .put("stream", false))
                             .onSuccess(success -> {
                                 var response = success.bodyAsJsonObject().getString("response");
-                                response += String.format("\n\nFrom: %s (Collection Size: %d).\nReferenced document: %s.", POD_NAME, collection.size(), document);
+                                response += String.format("\n\nReferenced document: %s. \nFrom: %s (Collection Size: %d)", document, POD_NAME, collection.size());
                                 promise.complete(response);
                             })
                             .onFailure(err -> {
