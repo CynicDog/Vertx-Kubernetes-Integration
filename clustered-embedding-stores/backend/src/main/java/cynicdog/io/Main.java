@@ -10,6 +10,7 @@ import io.vertx.ext.cluster.infinispan.InfinispanClusterManager;
 import io.vertx.ext.healthchecks.HealthCheckHandler;
 import io.vertx.ext.healthchecks.HealthChecks;
 import io.vertx.ext.web.Router;
+import org.infinispan.commons.api.CacheContainerAdmin;
 import org.infinispan.commons.dataconversion.MediaType;
 import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
@@ -38,7 +39,6 @@ public class Main extends AbstractVerticle {
                         .transport()
                         .defaultTransport()
                         .globalState()
-//                        .addProperty("configurationFile", "default-configs/default-jgroups-kubernetes.xml")
                         .build()
         );
         clusterManager = new InfinispanClusterManager(cacheManager);
@@ -53,7 +53,9 @@ public class Main extends AbstractVerticle {
 
         // Ensure embeddings cache is created only if not already present
         if (!cacheManager.cacheExists("embeddings")) {
-            cacheManager.createCache("embeddings", builder.build());
+            cacheManager.administration()
+                    .withFlags(CacheContainerAdmin.AdminFlag.VOLATILE)
+                    .getOrCreateCache("embeddings", builder.build());
         }
 
         // Initialize Ollama API
