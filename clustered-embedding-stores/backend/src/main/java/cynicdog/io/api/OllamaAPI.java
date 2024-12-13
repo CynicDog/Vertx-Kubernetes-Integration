@@ -60,7 +60,7 @@ public class OllamaAPI {
                     // Store the embeddings in the cache
                     collection.put(key, new Embedding(latentScores, prompt));
 
-                    var message = "Embedding entry stored with key: " + key;
+                    var message = String.format("Embedding entry stored with key: %s (Collection Size: %d).", key, collection.size());
                     logger.info(message);
                     promise.complete(message);
                 })
@@ -70,6 +70,41 @@ public class OllamaAPI {
                     promise.fail(message);
                 });
 
+        return promise.future();
+    }
+
+    public Future<String> evict(String key) {
+
+        Promise<String> promise = Promise.promise();
+
+        try {
+            collection.evict(key);
+
+            var message = String.format("Embedding entry evicted with key: %s (Collection Size: %d).", key, collection.size());
+            logger.info(message);
+            promise.complete(message);
+        } catch (Exception e) {
+            logger.error(e.getMessage());
+            promise.fail(e.getMessage());
+        }
+        return promise.future();
+    }
+
+    public Future<String> evictAll(String keys) {
+
+        Promise<String> promise = Promise.promise();
+
+        try {
+            for (String cacheKey : collection.keySet()) {
+                collection.evict(cacheKey);
+            }
+            var message = String.format("All embedding entries evicted (Collection Size: %d).", collection.size());
+            logger.info(message);
+            promise.complete(message);
+        } catch (Exception e) {
+            logger.error(e.getMessage());
+            promise.fail(e.getMessage());
+        }
         return promise.future();
     }
 
@@ -96,8 +131,7 @@ public class OllamaAPI {
                                     .put("stream", false))
                             .onSuccess(success -> {
                                 var response = success.bodyAsJsonObject().getString("response");
-                                response += String.format("\n\nFrom: %s.\nReferenced document: %s.", POD_NAME, document);
-
+                                response += String.format("\n\nFrom: %s (Collection Size: %d).\nReferenced document: %s.", POD_NAME, collection.size(), document);
                                 promise.complete(response);
                             })
                             .onFailure(err -> {

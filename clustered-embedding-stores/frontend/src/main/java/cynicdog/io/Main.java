@@ -29,6 +29,8 @@ public class Main extends AbstractVerticle {
                 .create(vertx)
                 .register("cluster-health", ClusterHealthCheck.createProcedure(vertx, false))));
 
+        router.post("/evict").handler(context -> handleRequest(context, "evict"));
+        router.post("/evictAll").handler(context -> handleRequest(context, "evictAll"));
         router.post("/embed").handler(context -> handleRequest(context, "embed"));
         router.post("/generate").handler(context -> handleRequest(context, "generate"));
 
@@ -46,6 +48,7 @@ public class Main extends AbstractVerticle {
     }
 
     private void handleRequest(RoutingContext context, String address) {
+
         String prompt = context.getBodyAsJson().getString("prompt");
 
         vertx.eventBus().<String>request(address, prompt)

@@ -60,6 +60,8 @@ public class Main extends AbstractVerticle {
                 .register("cluster-health", ClusterHealthCheck.createProcedure(vertx, false))));
 
         registerEventBusConsumer("embed", OllamaAPI::embed);
+        registerEventBusConsumer("evict", OllamaAPI::evict);
+        registerEventBusConsumer("evictAll", OllamaAPI::evictAll);
         registerEventBusConsumer("generate", OllamaAPI::generate);
 
         vertx.createHttpServer()
