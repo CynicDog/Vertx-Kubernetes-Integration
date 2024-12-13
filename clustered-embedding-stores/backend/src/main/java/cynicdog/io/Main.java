@@ -13,6 +13,7 @@ import io.vertx.ext.web.Router;
 import org.infinispan.commons.dataconversion.MediaType;
 import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
+import org.infinispan.configuration.global.GlobalConfigurationBuilder;
 import org.infinispan.manager.DefaultCacheManager;
 
 import java.util.function.Function;
@@ -32,12 +33,18 @@ public class Main extends AbstractVerticle {
     @Override
     public void start() throws Exception {
 
-        cacheManager = new DefaultCacheManager();
+        cacheManager = new DefaultCacheManager(
+                new GlobalConfigurationBuilder()
+                        .transport()
+                        .defaultTransport()
+                        .build()
+        );
         clusterManager = new InfinispanClusterManager(cacheManager);
 
         // Configure the cache for embeddings
         ConfigurationBuilder builder = new ConfigurationBuilder();
-        builder.clustering().cacheMode(CacheMode.DIST_SYNC)
+        builder.clustering()
+                .cacheMode(CacheMode.DIST_SYNC)
                 .encoding()
                 .mediaType(MediaType.APPLICATION_OBJECT_TYPE)
                 .memory();
