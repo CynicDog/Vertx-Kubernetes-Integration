@@ -15,12 +15,27 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: frontend
+  name: clustered-app
 spec:
   selector:
-    app: frontend
+    app: clustered-app
   ports:
     - protocol: TCP
       port: 80
       targetPort: 8080
   type: LoadBalancer
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ollama
+  labels:
+    app: ollama
+spec:
+  selector:
+    app: ollama
+  ports:
+    - protocol: TCP
+      port: 11434
+      targetPort: 11434
+  type: ClusterIP
