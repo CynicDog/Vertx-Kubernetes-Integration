@@ -45,7 +45,7 @@ cynicdog@cynicdogui-Mac ~ % kubectl port-forward service/frontend 8080:80
 ```
 
 ### 4. Test EventBus Communication from Pod to Pod with `/hello` Endpoint on the Frontend Service 
-```
+```bash
 cynicdog@cynicdogui-Mac ~ % http :8080/hello name=="Vert.x Clustering"
 HTTP/1.1 200 OK
 content-length: 64
@@ -58,6 +58,43 @@ Hello Vert.x Clustering from backend-deployment-79b4c7864d-m8th5
 </details>
 
 <details><summary><h3>B. Clustered Embedding Server on Kind with Ollama</h3></summary>
+
+### 1. Create a Kind Cluster
+
+```bash
+cynicdog@cynicdogui-Mac ~ % kind create --name=vertx-ollama 
+```
+
+### 2. Apply Kubernetes Resources on the Kind Cluster 
+
+Place the resource files in the `k8s` directory of this project repository on the control plane before running the following command.
+```bash
+root@vertx-ollama-control-plane:/# kubectl apply -f ./k8s/*.yml
+```
+
+If pods fail to start with messages like `Vert.x Infinispan getting "failed sending discovery request to /228.6.7.8`, enable multicast with:
+
+```bash
+sudo route add -net 224.0.0.0/5 127.0.0.1
+```
+
+### 3. Port Forward the Service to Local Machine
+
+Run the command below in a separate terminal to forward the service port from the cluster to your local machine.
+```bash
+cynicdog@cynicdogui-Mac ~ % kubectl port-forward service/frontend 8080:80 
+```
+
+### 4. Test Embedding and Text Generation Features 
+
+```bash
+PS C:\Users\이은상> http POST :8080/embed prompt="Llamas are members of the camelid family meaning they're pretty closely related to vicuñas and camels"
+HTTP/1.1 200 OK
+content-length: 104
+
+Embedding entry stored with key: 451439790
+From: backend-deployment-dfb656cc-rtggg (Collection Size: 1)
+``` 
 
 👆 [back to index](#index)
 
