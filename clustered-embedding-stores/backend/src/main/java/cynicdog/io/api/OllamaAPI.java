@@ -66,7 +66,6 @@ public class OllamaAPI {
                     context.response().end(message);
                 })
                 .onFailure(err -> {
-
                     var message = "Embedding request failed: " + err.getMessage();
                     logger.error(message);
                     context.response().setStatusCode(500).end(message);
@@ -117,8 +116,9 @@ public class OllamaAPI {
                             });
                 })
                 .onFailure(err -> {
-                    logger.error("Generate request failed: ", err);
-                    context.response().setStatusCode(500).end("Failed to generate response.");
+                    var message = "Generate request failed: " + err.getMessage();
+                    logger.error(message);
+                    context.response().setStatusCode(500).end(message);
                 });
     }
 
