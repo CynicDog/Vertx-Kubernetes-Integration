@@ -41,6 +41,11 @@ public class Main extends AbstractVerticle {
                         .defaultTransport()
                         .build()
         );
+
+        cacheManager.defineConfiguration("__vertx.subs", new ConfigurationBuilder().clustering().cacheMode(CacheMode.REPL_SYNC).build());
+        cacheManager.defineConfiguration("__vertx.haInfo", new ConfigurationBuilder().clustering().cacheMode(CacheMode.REPL_SYNC).build());
+        cacheManager.defineConfiguration("__vertx.nodeInfo", new ConfigurationBuilder().clustering().cacheMode(CacheMode.REPL_SYNC).build());
+
         clusterManager = new InfinispanClusterManager(cacheManager);
 
         // Configure the cache for embeddings
