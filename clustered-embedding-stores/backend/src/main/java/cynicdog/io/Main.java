@@ -36,8 +36,8 @@ public class Main extends AbstractVerticle {
         DefaultCacheManager cacheManager = new DefaultCacheManager(
                 new GlobalConfigurationBuilder()
                         .transport()
-                        .addProperty("configurationFile", "default-configs/default-jgroups-kubernetes.xml")
                         .defaultTransport()
+                        .addProperty("configurationFile", "default-configs/default-jgroups-kubernetes.xml")
                         .build()
         );
         clusterManager = new InfinispanClusterManager(cacheManager);
