@@ -38,7 +38,8 @@ public class Main extends AbstractVerticle {
                 new GlobalConfigurationBuilder()
                         .transport()
                         .defaultTransport()
-                        .addProperty("configurationFile", "default-configs/default-jgroups-kubernetes.xml")
+                        .globalState()
+                        .enable()
                         .build()
         );
         clusterManager = new InfinispanClusterManager(cacheManager);
@@ -46,19 +47,24 @@ public class Main extends AbstractVerticle {
         // Configure the cache for embeddings
         ConfigurationBuilder builder = new ConfigurationBuilder();
         builder.clustering()
-                .cacheMode(CacheMode.REPL_SYNC)
+                .cacheMode(CacheMode.REPL_ASYNC)
                 .encoding()
                 .mediaType(MediaType.APPLICATION_OBJECT_TYPE)
                 .memory();
 
         // Ensure embeddings cache is created only if not already present
         if (!cacheManager.cacheExists("embeddings")) {
+            logger.info(String.format("Cache %s does not exist.", "embeddings"));
             cacheManager.administration()
+                    .withFlags(CacheContainerAdmin.AdminFlag.VOLATILE)
                     .getOrCreateCache("embeddings", builder.build());
         }
 
+        logger.info(String.format("Node Address: %s", cacheManager.getNodeAddress()));
+        logger.info(String.format("Cache Manager Hashcode: %d", cacheManager.getCache("embeddings").hashCode()));
+
         // Initialize Ollama API
-        var OllamaAPI = new OllamaAPI(vertx, OLLAMA_HOST, OLLAMA_PORT, cacheManager.getCache("embeddings"));
+        var OllamaAPI = new OllamaAPI(vertx, OLLAMA_HOST, OLLAMA_PORT, cacheManager.getCache("embeddings", false));
 
         // Register router handlers
         Router router = Router.router(vertx);
