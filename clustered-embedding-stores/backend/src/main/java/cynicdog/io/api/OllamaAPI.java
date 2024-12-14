@@ -50,7 +50,6 @@ public class OllamaAPI {
     public Future<String> embed(String prompt) {
 
         Promise<String> promise = Promise.promise();
-        Cache<String, Embedding> collection;
 
         if (cacheManager.cacheExists("embeddings")) {
             logger.info(String.format("Cache %s exists with the hashcode of %d on %s node.",
@@ -58,14 +57,17 @@ public class OllamaAPI {
                     cacheManager.getCache("embeddings").hashCode(),
                     cacheManager.getNodeAddress())
             );
-            collection = cacheManager.getCache("embeddings");
         } else {
             logger.info(String.format("Cache %s does not exist, a new cache is created on %s node.",
                     "embeddings",
                     cacheManager.getNodeAddress()
             ));
-            collection = cacheManager.createCache("embeddings", cacheConfig);
         }
+
+        Cache<String, Embedding> collection = cacheManager
+                .administration()
+                .withFlags(CacheContainerAdmin.AdminFlag.VOLATILE)
+                .getOrCreateCache("embeddings", cacheConfig);
 
         client.post(port, host, "/api/embeddings")
                 .sendJsonObject(new JsonObject()
@@ -98,7 +100,6 @@ public class OllamaAPI {
     public Future<String> evict(String key) {
 
         Promise<String> promise = Promise.promise();
-        Cache<String, Embedding> collection;
 
         if (cacheManager.cacheExists("embeddings")) {
             logger.info(String.format("Cache %s exists with the hashcode of %d on %s node.",
@@ -106,14 +107,17 @@ public class OllamaAPI {
                     cacheManager.getCache("embeddings").hashCode(),
                     cacheManager.getNodeAddress())
             );
-            collection = cacheManager.getCache("embeddings");
         } else {
             logger.info(String.format("Cache %s does not exist, a new cache is created on %s node.",
                     "embeddings",
                     cacheManager.getNodeAddress()
             ));
-            collection = cacheManager.createCache("embeddings", cacheConfig);
         }
+
+        Cache<String, Embedding> collection = cacheManager
+                .administration()
+                .withFlags(CacheContainerAdmin.AdminFlag.VOLATILE)
+                .getOrCreateCache("embeddings", cacheConfig);
 
         try {
             collection.evict(key);
@@ -131,7 +135,6 @@ public class OllamaAPI {
     public Future<String> evictAll(String keys) {
 
         Promise<String> promise = Promise.promise();
-        Cache<String, Embedding> collection;
 
         if (cacheManager.cacheExists("embeddings")) {
             logger.info(String.format("Cache %s exists with the hashcode of %d on %s node.",
@@ -139,14 +142,17 @@ public class OllamaAPI {
                     cacheManager.getCache("embeddings").hashCode(),
                     cacheManager.getNodeAddress())
             );
-            collection = cacheManager.getCache("embeddings");
         } else {
             logger.info(String.format("Cache %s does not exist, a new cache is created on %s node.",
                     "embeddings",
                     cacheManager.getNodeAddress()
             ));
-            collection = cacheManager.createCache("embeddings", cacheConfig);
         }
+
+        Cache<String, Embedding> collection = cacheManager
+                .administration()
+                .withFlags(CacheContainerAdmin.AdminFlag.VOLATILE)
+                .getOrCreateCache("embeddings", cacheConfig);
 
         try {
             for (String cacheKey : collection.keySet()) {
@@ -165,7 +171,6 @@ public class OllamaAPI {
     public Future<String> generate(String prompt) {
 
         Promise<String> promise = Promise.promise();
-        Cache<String, Embedding> collection;
 
         if (cacheManager.cacheExists("embeddings")) {
             logger.info(String.format("Cache %s exists with the hashcode of %d on %s node.",
@@ -173,14 +178,17 @@ public class OllamaAPI {
                     cacheManager.getCache("embeddings").hashCode(),
                     cacheManager.getNodeAddress())
             );
-            collection = cacheManager.getCache("embeddings");
         } else {
             logger.info(String.format("Cache %s does not exist, a new cache is created on %s node.",
                     "embeddings",
                     cacheManager.getNodeAddress()
             ));
-            collection = cacheManager.createCache("embeddings", cacheConfig);
         }
+
+        Cache<String, Embedding> collection = cacheManager
+                .administration()
+                .withFlags(CacheContainerAdmin.AdminFlag.VOLATILE)
+                .getOrCreateCache("embeddings", cacheConfig);
 
         client.post(port, host, "/api/embeddings")
                 .sendJsonObject(new JsonObject()
