@@ -37,18 +37,10 @@ public class Main extends AbstractVerticle {
         // Configure default cache manager
         DefaultCacheManager cacheManager = new DefaultCacheManager(
                 new GlobalConfigurationBuilder()
-                        .cacheContainer()
-                        .defaultCache("distributed-cache")
                         .transport()
                         .defaultTransport()
                         .build()
         );
-
-        cacheManager.defineConfiguration("distributed-cache", new ConfigurationBuilder().clustering().cacheMode(CacheMode.DIST_SYNC).build());
-        cacheManager.defineConfiguration("__vertx.subs", new ConfigurationBuilder().clustering().cacheMode(CacheMode.REPL_SYNC).build());
-        cacheManager.defineConfiguration("__vertx.haInfo", new ConfigurationBuilder().clustering().cacheMode(CacheMode.REPL_SYNC).build());
-        cacheManager.defineConfiguration("__vertx.nodeInfo", new ConfigurationBuilder().clustering().cacheMode(CacheMode.REPL_SYNC).build());
-
         clusterManager = new InfinispanClusterManager(cacheManager);
 
         // Configure the cache for embeddings
