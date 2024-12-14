@@ -21,14 +21,6 @@ repositories {
     mavenCentral()
 }
 
-configurations.all {
-    resolutionStrategy.eachDependency { details ->
-        if (details.requested.group == 'org.infinispan') {
-            details.useVersion '14.0.14.Final'
-        }
-    }
-}
-
 dependencies {
     implementation("io.vertx:vertx-web:${vertxVersion}")
     implementation("io.vertx:vertx-web-client:${vertxVersion}")
