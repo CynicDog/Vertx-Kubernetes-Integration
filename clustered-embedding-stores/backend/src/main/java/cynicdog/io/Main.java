@@ -46,8 +46,7 @@ public class Main extends AbstractVerticle {
         cacheConfig.clustering()
                 .cacheMode(CacheMode.REPL_ASYNC)
                 .encoding()
-                .mediaType(MediaType.APPLICATION_OBJECT_TYPE)
-                .memory();
+                .mediaType(MediaType.APPLICATION_OBJECT_TYPE);
 
         // Initialize Ollama API
         var OllamaAPI = new OllamaAPI(vertx, OLLAMA_HOST, OLLAMA_PORT, cacheManager, cacheConfig);
