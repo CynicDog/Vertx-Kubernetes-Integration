@@ -9,6 +9,9 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.WebClient;
 import org.infinispan.Cache;
+import org.infinispan.commons.api.CacheContainerAdmin;
+import org.infinispan.configuration.cache.ConfigurationBuilder;
+import org.infinispan.manager.DefaultCacheManager;
 
 import static cynicdog.io.Main.POD_NAME;
 import static cynicdog.io.util.VectorUtils.retrieveRelevantDocument;
@@ -22,14 +25,16 @@ public class OllamaAPI {
 
     final Vertx vertx;
     final WebClient client;
-    final Cache<String, Embedding> collection;
+    final DefaultCacheManager cacheManager;
+    final ConfigurationBuilder cacheConfig;
 
-    public OllamaAPI(Vertx vertx, String host, int port, Cache<String, Embedding> collection) {
+    public OllamaAPI(Vertx vertx, String host, int port, DefaultCacheManager cacheManager, ConfigurationBuilder cacheConfig) {
         this.host = host;
         this.port = port;
         this.vertx = vertx;
         this.client = WebClient.create(vertx);
-        this.collection = collection;
+        this.cacheManager = cacheManager;
+        this.cacheConfig = cacheConfig;
 
         String[] models = {"mxbai-embed-large:latest", "qwen:1.8b"};
 
@@ -44,6 +49,15 @@ public class OllamaAPI {
     public Future<String> embed(String prompt) {
 
         Promise<String> promise = Promise.promise();
+
+        // Ensure embeddings cache is created only if not already present
+        if (!cacheManager.cacheExists("embeddings")) {
+            logger.info(String.format("Cache %s does not exist.", "embeddings"));
+            cacheManager.administration()
+                    .withFlags(CacheContainerAdmin.AdminFlag.VOLATILE)
+                    .getOrCreateCache("embeddings", cacheConfig.build());
+        }
+        Cache<String, Embedding> collection = cacheManager.getCache("embeddings", false);
 
         client.post(port, host, "/api/embeddings")
                 .sendJsonObject(new JsonObject()
@@ -77,6 +91,15 @@ public class OllamaAPI {
 
         Promise<String> promise = Promise.promise();
 
+        // Ensure embeddings cache is created only if not already present
+        if (!cacheManager.cacheExists("embeddings")) {
+            logger.info(String.format("Cache %s does not exist.", "embeddings"));
+            cacheManager.administration()
+                    .withFlags(CacheContainerAdmin.AdminFlag.VOLATILE)
+                    .getOrCreateCache("embeddings", cacheConfig.build());
+        }
+        Cache<String, Embedding> collection = cacheManager.getCache("embeddings", false);
+
         try {
             collection.evict(key);
 
@@ -93,6 +116,15 @@ public class OllamaAPI {
     public Future<String> evictAll(String keys) {
 
         Promise<String> promise = Promise.promise();
+
+        // Ensure embeddings cache is created only if not already present
+        if (!cacheManager.cacheExists("embeddings")) {
+            logger.info(String.format("Cache %s does not exist.", "embeddings"));
+            cacheManager.administration()
+                    .withFlags(CacheContainerAdmin.AdminFlag.VOLATILE)
+                    .getOrCreateCache("embeddings", cacheConfig.build());
+        }
+        Cache<String, Embedding> collection = cacheManager.getCache("embeddings", false);
 
         try {
             for (String cacheKey : collection.keySet()) {
@@ -111,6 +143,15 @@ public class OllamaAPI {
     public Future<String> generate(String prompt) {
 
         Promise<String> promise = Promise.promise();
+
+        // Ensure embeddings cache is created only if not already present
+        if (!cacheManager.cacheExists("embeddings")) {
+            logger.info(String.format("Cache %s does not exist.", "embeddings"));
+            cacheManager.administration()
+                    .withFlags(CacheContainerAdmin.AdminFlag.VOLATILE)
+                    .getOrCreateCache("embeddings", cacheConfig.build());
+        }
+        Cache<String, Embedding> collection = cacheManager.getCache("embeddings", false);
 
         client.post(port, host, "/api/embeddings")
                 .sendJsonObject(new JsonObject()
