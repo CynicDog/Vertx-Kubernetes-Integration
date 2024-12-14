@@ -10,6 +10,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.WebClient;
 import org.infinispan.Cache;
 import org.infinispan.commons.api.CacheContainerAdmin;
+import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.manager.DefaultCacheManager;
 
@@ -26,9 +27,9 @@ public class OllamaAPI {
     final Vertx vertx;
     final WebClient client;
     final DefaultCacheManager cacheManager;
-    final ConfigurationBuilder cacheConfig;
+    final Configuration cacheConfig;
 
-    public OllamaAPI(Vertx vertx, String host, int port, DefaultCacheManager cacheManager, ConfigurationBuilder cacheConfig) {
+    public OllamaAPI(Vertx vertx, String host, int port, DefaultCacheManager cacheManager, Configuration cacheConfig) {
         this.host = host;
         this.port = port;
         this.vertx = vertx;
@@ -63,12 +64,8 @@ public class OllamaAPI {
                     "embeddings",
                     cacheManager.getNodeAddress()
             ));
-            collection = cacheManager.createCache("embeddings", cacheConfig.build());
+            collection = cacheManager.createCache("embeddings", cacheConfig);
         }
-
-//        Cache<String, Embedding> collection = cacheManager.administration()
-//                .withFlags(CacheContainerAdmin.AdminFlag.VOLATILE)
-//                .getOrCreateCache("embeddings", cacheConfig.build());
 
         client.post(port, host, "/api/embeddings")
                 .sendJsonObject(new JsonObject()
@@ -115,12 +112,8 @@ public class OllamaAPI {
                     "embeddings",
                     cacheManager.getNodeAddress()
             ));
-            collection = cacheManager.createCache("embeddings", cacheConfig.build());
+            collection = cacheManager.createCache("embeddings", cacheConfig);
         }
-
-//        Cache<String, Embedding> collection = cacheManager.administration()
-//                .withFlags(CacheContainerAdmin.AdminFlag.VOLATILE)
-//                .getOrCreateCache("embeddings", cacheConfig.build());
 
         try {
             collection.evict(key);
@@ -152,12 +145,8 @@ public class OllamaAPI {
                     "embeddings",
                     cacheManager.getNodeAddress()
             ));
-            collection = cacheManager.createCache("embeddings", cacheConfig.build());
+            collection = cacheManager.createCache("embeddings", cacheConfig);
         }
-
-//        Cache<String, Embedding> collection = cacheManager.administration()
-//                .withFlags(CacheContainerAdmin.AdminFlag.VOLATILE)
-//                .getOrCreateCache("embeddings", cacheConfig.build());
 
         try {
             for (String cacheKey : collection.keySet()) {
@@ -190,12 +179,8 @@ public class OllamaAPI {
                     "embeddings",
                     cacheManager.getNodeAddress()
             ));
-            collection = cacheManager.createCache("embeddings", cacheConfig.build());
+            collection = cacheManager.createCache("embeddings", cacheConfig);
         }
-
-//        Cache<String, Embedding> collection = cacheManager.administration()
-//                .withFlags(CacheContainerAdmin.AdminFlag.VOLATILE)
-//                .getOrCreateCache("embeddings", cacheConfig.build());
 
         client.post(port, host, "/api/embeddings")
                 .sendJsonObject(new JsonObject()

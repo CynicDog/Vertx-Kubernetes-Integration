@@ -13,6 +13,7 @@ import io.vertx.ext.web.Router;
 import org.infinispan.commons.api.CacheContainerAdmin;
 import org.infinispan.commons.dataconversion.MediaType;
 import org.infinispan.configuration.cache.CacheMode;
+import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.global.GlobalConfigurationBuilder;
 import org.infinispan.manager.DefaultCacheManager;
@@ -33,21 +34,21 @@ public class Main extends AbstractVerticle {
     @Override
     public void start() throws Exception {
 
+        // Configure default cache manager
         DefaultCacheManager cacheManager = new DefaultCacheManager(
                 new GlobalConfigurationBuilder()
                         .transport()
                         .defaultTransport()
-                        .addProperty("configurationFile", "default-configs/default-jgroups-kubernetes.xml")
                         .build()
         );
         clusterManager = new InfinispanClusterManager(cacheManager);
 
         // Configure the cache for embeddings
-        ConfigurationBuilder cacheConfig = new ConfigurationBuilder();
-        cacheConfig.clustering()
+        Configuration cacheConfig = new ConfigurationBuilder().clustering()
                 .cacheMode(CacheMode.REPL_ASYNC)
                 .encoding()
-                .mediaType(MediaType.APPLICATION_OBJECT_TYPE);
+                .mediaType(MediaType.APPLICATION_OBJECT_TYPE)
+                .build();
 
         // Initialize Ollama API
         var OllamaAPI = new OllamaAPI(vertx, OLLAMA_HOST, OLLAMA_PORT, cacheManager, cacheConfig);
