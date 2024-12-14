@@ -88,13 +88,30 @@ cynicdog@cynicdogui-Mac ~ % kubectl port-forward service/frontend 8080:80
 ### 4. Test Embedding and Text Generation Features 
 
 ```bash
-PS C:\Users\이은상> http POST :8080/embed prompt="Llamas are members of the camelid family meaning they're pretty closely related to vicuñas and camels"
+PS C:\Users> http POST :8080/embed prompt="Llamas are members of the camelid family meaning they're pretty closely related to vicuñas and camels"
 HTTP/1.1 200 OK
 content-length: 104
 
 Embedding entry stored with key: 451439790
 From: backend-deployment-dfb656cc-rtggg (Collection Size: 1)
-``` 
+```
+
+```bash
+PS C:\Users> http POST :8080/generate prompt="What animals are llamas related to?"
+HTTP/1.1 200 OK
+content-length: 1018
+
+Llamas are closely related to vicuñas and camels.
+
+Vicuñas are native to South America and share many traits with llamas, including their warm-blooded physiology, their ability to thrive in a variety of environments (including grasslands, savannas, and tundra), and their unique social structure.
+
+Camels, on the other hand, share some similarities with llamas, such as their similar physical characteristics (e.g., short legs and large horns) that may influence their behavior or social structure.
+
+However, it's important to note that while llamas are closely related to vicuñas and camels in terms of physical similarity, there are also significant differences in terms of culture, language, religion, political power, and other factors that can influence the behavior and social structure of llamas, vicuñas, and camels.
+
+Referenced document: Llamas are members of the camelid family meaning they're pretty closely related to vicuñas and camels.
+From: backend-deployment-dfb656cc-rtggg (Collection Size: 1)
+```
 
 👆 [back to index](#index)
 
