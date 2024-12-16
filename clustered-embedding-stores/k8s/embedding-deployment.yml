@@ -39,7 +39,7 @@ spec:
     spec:
       containers:
         - name: backend
-          image: ghcr.io/cynicdog/vertx-kubernetes-integration/infinispan-embedding-backend
+          image: ghcr.io/cynicdog/vertx-kubernetes-integration-templates/infinispan-embedding-backend
           imagePullPolicy: Always
           env:
             - name: JAVA_TOOL_OPTIONS
@@ -95,7 +95,7 @@ spec:
     spec:
       containers:
         - name: frontend
-          image: ghcr.io/cynicdog/vertx-kubernetes-integration/infinispan-embedding-frontend
+          image: ghcr.io/cynicdog/vertx-kubernetes-integration-templates/infinispan-embedding-frontend
           imagePullPolicy: Always
           env:
             - name: JAVA_TOOL_OPTIONS
