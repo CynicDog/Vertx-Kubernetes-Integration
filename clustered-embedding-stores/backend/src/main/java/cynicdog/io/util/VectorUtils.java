@@ -1,6 +1,6 @@
 package cynicdog.io.util;
 
-import cynicdog.io.api.OllamaAPI;
+import cynicdog.io.data.Embedding;
 import io.vertx.core.impl.logging.Logger;
 import io.vertx.core.impl.logging.LoggerFactory;
 import org.infinispan.Cache;
@@ -11,7 +11,7 @@ public class VectorUtils {
 
     private final static Logger logger = LoggerFactory.getLogger(VectorUtils.class);
 
-    public static String retrieveRelevantDocument(List<Float> embeddings, Cache<String, OllamaAPI.Embedding> collection) {
+    public static String retrieveRelevantDocument(List<Float> embeddings, Cache<String, Embedding> collection) {
         String closestKey = null;
         double maxSimilarity = -1;
 

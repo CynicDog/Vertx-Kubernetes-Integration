@@ -1,3 +1,4 @@
+
 package cynicdog.io;
 
 import cynicdog.io.api.OllamaAPI;
@@ -12,6 +13,7 @@ import io.vertx.ext.healthchecks.HealthChecks;
 import io.vertx.ext.web.Router;
 import org.infinispan.commons.api.CacheContainerAdmin;
 import org.infinispan.commons.dataconversion.MediaType;
+import org.infinispan.commons.marshall.JavaSerializationMarshaller;
 import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
@@ -29,30 +31,14 @@ public class Main extends AbstractVerticle {
     public static final String POD_NAME = System.getenv().getOrDefault("POD_NAME", "unknown");
 
     private static final Logger logger = LoggerFactory.getLogger(Main.class);
-    private static ClusterManager clusterManager;
+
+    private DefaultCacheManager cacheManager;
+    private Configuration cacheConfig;
 
     @Override
     public void start() throws Exception {
 
-        // Configure default cache manager
-        DefaultCacheManager cacheManager = new DefaultCacheManager(
-                new GlobalConfigurationBuilder()
-                        .transport()
-                        .defaultTransport()
-//                        .addProperty("configurationFile", "default-configs/default-jgroups-kubernetes.xml")
-                        .build()
-        );
-        clusterManager = new InfinispanClusterManager(cacheManager);
-
-        // Configure the cache for embeddings
-        Configuration cacheConfig = new ConfigurationBuilder().clustering()
-                .cacheMode(CacheMode.REPL_SYNC)
-                .encoding()
-                .mediaType(MediaType.APPLICATION_OBJECT_TYPE)
-                .build();
-
-        // Initialize Ollama API
-        var OllamaAPI = new OllamaAPI(vertx, OLLAMA_HOST, OLLAMA_PORT, cacheManager, cacheConfig);
+        var ollamaAPI = new OllamaAPI(vertx, OLLAMA_HOST, OLLAMA_PORT, cacheManager, cacheConfig);
 
         // Register router handlers
         Router router = Router.router(vertx);
@@ -62,10 +48,10 @@ public class Main extends AbstractVerticle {
                 .create(vertx)
                 .register("cluster-health", ClusterHealthCheck.createProcedure(vertx, false))));
 
-        registerEventBusConsumer("embed", OllamaAPI::embed);
-        registerEventBusConsumer("evict", OllamaAPI::evict);
-        registerEventBusConsumer("evictAll", OllamaAPI::evictAll);
-        registerEventBusConsumer("generate", OllamaAPI::generate);
+        registerEventBusConsumer("embed", ollamaAPI::embed);
+        registerEventBusConsumer("evict", ollamaAPI::evict);
+        registerEventBusConsumer("evictAll", ollamaAPI::evictAll);
+        registerEventBusConsumer("generate", ollamaAPI::generate);
 
         vertx.createHttpServer()
                 .requestHandler(router)
@@ -74,8 +60,38 @@ public class Main extends AbstractVerticle {
     }
 
     public static void main(String[] args) {
+
+        // Configure default cache manager
+        DefaultCacheManager cacheManager = new DefaultCacheManager(
+                new GlobalConfigurationBuilder()
+                        .transport()
+                        .defaultTransport()
+                        .serialization()
+//                        .addProperty("configurationFile", "default-configs/default-jgroups-kubernetes.xml")
+                        .build()
+        );
+        cacheManager.defineConfiguration("distributed-cache", new ConfigurationBuilder().clustering().cacheMode(CacheMode.DIST_SYNC).build());
+        cacheManager.defineConfiguration("__vertx.subs", new ConfigurationBuilder().clustering().cacheMode(CacheMode.REPL_SYNC).build());
+        cacheManager.defineConfiguration("__vertx.haInfo", new ConfigurationBuilder().clustering().cacheMode(CacheMode.REPL_SYNC).build());
+        cacheManager.defineConfiguration("__vertx.nodeInfo", new ConfigurationBuilder().clustering().cacheMode(CacheMode.REPL_SYNC).build());
+
+        ClusterManager clusterManager = new InfinispanClusterManager(cacheManager);
+
+        // Configure the cache for embeddings
+        Configuration cacheConfig = new ConfigurationBuilder().clustering()
+                .cacheMode(CacheMode.REPL_SYNC)
+                .encoding().key().mediaType(MediaType.APPLICATION_PROTOSTREAM_TYPE)
+                .encoding().value().mediaType(MediaType.APPLICATION_PROTOSTREAM_TYPE)
+                .build();
+
+        // Create an instance of Main and set the cache manager and config
+        Main mainVerticle = new Main();
+        mainVerticle.cacheManager = cacheManager;
+        mainVerticle.cacheConfig = cacheConfig;
+
+        // Deploy the verticle
         Vertx.clusteredVertx(new VertxOptions().setClusterManager(clusterManager))
-                .compose(v -> v.deployVerticle(new Main()))
+                .compose(v -> v.deployVerticle(mainVerticle))
                 .onFailure(Throwable::printStackTrace);
     }
 
@@ -91,3 +107,4 @@ public class Main extends AbstractVerticle {
         });
     }
 }
+
