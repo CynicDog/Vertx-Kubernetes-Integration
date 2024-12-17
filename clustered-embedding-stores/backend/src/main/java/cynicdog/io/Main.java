@@ -48,6 +48,7 @@ public class Main extends AbstractVerticle {
                 .create(vertx)
                 .register("cluster-health", ClusterHealthCheck.createProcedure(vertx, false))));
 
+        // Register EventBus consumers
         registerEventBusConsumer("embed", ollamaAPI::embed);
         registerEventBusConsumer("evict", ollamaAPI::evict);
         registerEventBusConsumer("evictAll", ollamaAPI::evictAll);
@@ -66,10 +67,11 @@ public class Main extends AbstractVerticle {
                 new GlobalConfigurationBuilder()
                         .transport()
                         .defaultTransport()
-                        .serialization()
 //                        .addProperty("configurationFile", "default-configs/default-jgroups-kubernetes.xml")
                         .build()
         );
+
+        // Configure Infinispan caches for Vert.x clustering
         cacheManager.defineConfiguration("distributed-cache", new ConfigurationBuilder().clustering().cacheMode(CacheMode.DIST_SYNC).build());
         cacheManager.defineConfiguration("__vertx.subs", new ConfigurationBuilder().clustering().cacheMode(CacheMode.REPL_SYNC).build());
         cacheManager.defineConfiguration("__vertx.haInfo", new ConfigurationBuilder().clustering().cacheMode(CacheMode.REPL_SYNC).build());
