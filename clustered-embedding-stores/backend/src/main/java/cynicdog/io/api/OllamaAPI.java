@@ -14,6 +14,8 @@ import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.manager.DefaultCacheManager;
 
+import java.util.List;
+
 import static cynicdog.io.Main.POD_NAME;
 import static cynicdog.io.util.VectorUtils.retrieveRelevantDocument;
 
@@ -75,10 +77,10 @@ public class OllamaAPI {
                         .put("prompt", prompt))
                 .onSuccess(res -> {
                     JsonArray embeddingsJson = res.bodyAsJsonObject().getJsonArray("embedding");
-                    float[] latentScores = new float[embeddingsJson.size()];
-                    for (int i = 0; i < embeddingsJson.size(); i++) {
-                        latentScores[i] = embeddingsJson.getFloat(i);
-                    }
+                    List<Float> latentScores = embeddingsJson.stream()
+                            .map(value -> ((Number) value).floatValue())
+                            .toList();
+
                     String key = Integer.toString(prompt.hashCode());
 
                     // Store the embeddings in the cache
@@ -196,10 +198,10 @@ public class OllamaAPI {
                         .put("prompt", prompt))
                 .onSuccess(res -> {
                     JsonArray embeddingsJson = res.bodyAsJsonObject().getJsonArray("embedding");
-                    float[] embeddings = new float[embeddingsJson.size()];
-                    for (int i = 0; i < embeddingsJson.size(); i++) {
-                        embeddings[i] = embeddingsJson.getFloat(i);
-                    }
+                    List<Float> embeddings = embeddingsJson.stream()
+                            .map(value -> ((Number) value).floatValue())
+                            .toList();
+
                     String document = retrieveRelevantDocument(embeddings, collection);
 
                     client.post(port, host, "/api/generate")
@@ -226,19 +228,20 @@ public class OllamaAPI {
     }
 
     public static class Embedding {
-        private float[] latentScores;
+
+        private List<Float> latentScores; // Change to List<Float>
         private String document;
 
-        public Embedding(float[] latentScores, String document) {
+        public Embedding(List<Float> latentScores, String document) {
             this.latentScores = latentScores;
             this.document = document;
         }
 
-        public float[] getLatentScores() {
+        public List<Float> getLatentScores() {
             return latentScores;
         }
 
-        public void setLatentScores(float[] latentScores) {
+        public void setLatentScores(List<Float> latentScores) {
             this.latentScores = latentScores;
         }
 
