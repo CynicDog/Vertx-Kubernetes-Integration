@@ -27,14 +27,6 @@ public class Main extends AbstractVerticle {
 
     private static final Logger logger = LoggerFactory.getLogger(Main.class);
 
-    DefaultCacheManager cacheManager;
-
-    public Main() {
-    }
-
-    public Main(DefaultCacheManager cacheManager) {
-        this.cacheManager = cacheManager;
-    }
 
     @Override
     public void start() throws Exception {
@@ -49,6 +41,14 @@ public class Main extends AbstractVerticle {
                 .register("cluster-health", ClusterHealthCheck.createProcedure(vertx, false))));
 
         var ollamaAPI = new OllamaAPI(WebClient.create(vertx), OLLAMA_HOST, OLLAMA_PORT);
+
+        var globalConfig = new GlobalConfigurationBuilder()
+                .transport()
+                .defaultTransport()
+                .build();
+
+        // Configure default cache manager
+        DefaultCacheManager cacheManager = new DefaultCacheManager(globalConfig);
 
         // Register consumers
         vertx.eventBus().<String>consumer("embed", msg -> {
@@ -100,16 +100,15 @@ public class Main extends AbstractVerticle {
 
     public static void main(String[] args) {
 
+        var globalConfig = new GlobalConfigurationBuilder()
+                .transport()
+                .defaultTransport()
+                .build();
+
         // Configure default cache manager
-        DefaultCacheManager cacheManager = new DefaultCacheManager(
-                new GlobalConfigurationBuilder()
-                        .transport()
-                        .defaultTransport()
-                        .build()
-        );
+        DefaultCacheManager cacheManager = new DefaultCacheManager(globalConfig);
 
         // Configure Infinispan caches for Vert.x clustering
-        cacheManager.defineConfiguration("distributed-cache", new ConfigurationBuilder().clustering().cacheMode(CacheMode.DIST_SYNC).build());
         cacheManager.defineConfiguration("__vertx.subs", new ConfigurationBuilder().clustering().cacheMode(CacheMode.REPL_SYNC).build());
         cacheManager.defineConfiguration("__vertx.haInfo", new ConfigurationBuilder().clustering().cacheMode(CacheMode.REPL_SYNC).build());
         cacheManager.defineConfiguration("__vertx.nodeInfo", new ConfigurationBuilder().clustering().cacheMode(CacheMode.REPL_SYNC).build());
@@ -118,7 +117,7 @@ public class Main extends AbstractVerticle {
 
         // Deploy the verticle
         Vertx.clusteredVertx(new VertxOptions().setClusterManager(clusterManager))
-                .compose(v -> v.deployVerticle(new Main(cacheManager)))
+                .compose(v -> v.deployVerticle(new Main()))
                 .onFailure(Throwable::printStackTrace);
     }
 }
