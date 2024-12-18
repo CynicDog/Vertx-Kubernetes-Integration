@@ -27,11 +27,7 @@ public class Main extends AbstractVerticle {
 
     private static final Logger logger = LoggerFactory.getLogger(Main.class);
 
-    private DefaultCacheManager cacheManager;
-
-    public Main(DefaultCacheManager cacheManager) {
-        this.cacheManager = cacheManager;
-    }
+    DefaultCacheManager cacheManager;
 
     @Override
     public void start() throws Exception {
@@ -113,9 +109,13 @@ public class Main extends AbstractVerticle {
 
         ClusterManager clusterManager = new InfinispanClusterManager(cacheManager);
 
+        // Create an instance of Main and set the cache manager and config
+        Main mainVerticle = new Main();
+        mainVerticle.cacheManager = cacheManager;
+
         // Deploy the verticle
         Vertx.clusteredVertx(new VertxOptions().setClusterManager(clusterManager))
-                .compose(v -> v.deployVerticle(new Main(cacheManager)))
+                .compose(v -> v.deployVerticle(mainVerticle))
                 .onFailure(Throwable::printStackTrace);
     }
 }
