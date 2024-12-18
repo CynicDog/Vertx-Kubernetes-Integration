@@ -3,7 +3,6 @@ package cynicdog.io.api;
 import cynicdog.io.data.Embedding;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
-import io.vertx.core.Vertx;
 import io.vertx.core.impl.logging.Logger;
 import io.vertx.core.impl.logging.LoggerFactory;
 import io.vertx.core.json.JsonArray;
@@ -11,6 +10,8 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.WebClient;
 import org.infinispan.Cache;
 import org.infinispan.commons.api.CacheContainerAdmin;
+import org.infinispan.commons.dataconversion.MediaType;
+import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.manager.DefaultCacheManager;
@@ -27,18 +28,18 @@ public class OllamaAPI {
     final String host;
     final int port;
 
-    final Vertx vertx;
-    final WebClient client;
-    final DefaultCacheManager cacheManager;
-    final Configuration cacheConfig;
+    Configuration cacheConfig;
 
-    public OllamaAPI(Vertx vertx, String host, int port, DefaultCacheManager cacheManager, Configuration cacheConfig) {
+    public OllamaAPI(WebClient client, String host, int port) {
         this.host = host;
         this.port = port;
-        this.vertx = vertx;
-        this.client = WebClient.create(vertx);
-        this.cacheManager = cacheManager;
-        this.cacheConfig = cacheConfig;
+
+        // Configure the cache for embeddings
+        this.cacheConfig = new ConfigurationBuilder().clustering()
+                .cacheMode(CacheMode.REPL_SYNC)
+                .encoding().key().mediaType(MediaType.APPLICATION_OBJECT_TYPE)
+                .encoding().value().mediaType(MediaType.APPLICATION_PROTOSTREAM_TYPE)
+                .build();
 
         String[] models = {"mxbai-embed-large:latest", "qwen:1.8b"};
 
@@ -50,7 +51,7 @@ public class OllamaAPI {
         }
     }
 
-    public Future<String> embed(String prompt) {
+    public Future<String> embed(WebClient client, String prompt, DefaultCacheManager cacheManager) {
 
         Promise<String> promise = Promise.promise();
 
@@ -100,7 +101,7 @@ public class OllamaAPI {
         return promise.future();
     }
 
-    public Future<String> evict(String key) {
+    public Future<String> evict(WebClient client, String key, DefaultCacheManager cacheManager) {
 
         Promise<String> promise = Promise.promise();
 
@@ -135,7 +136,7 @@ public class OllamaAPI {
         return promise.future();
     }
 
-    public Future<String> evictAll(String keys) {
+    public Future<String> evictAll(WebClient client, String keys, DefaultCacheManager cacheManager) {
 
         Promise<String> promise = Promise.promise();
 
@@ -171,7 +172,7 @@ public class OllamaAPI {
         return promise.future();
     }
 
-    public Future<String> generate(String prompt) {
+    public Future<String> generate(WebClient client, String prompt, DefaultCacheManager cacheManager) {
 
         Promise<String> promise = Promise.promise();
 
