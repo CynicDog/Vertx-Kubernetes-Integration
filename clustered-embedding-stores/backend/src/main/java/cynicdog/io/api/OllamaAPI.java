@@ -1,5 +1,6 @@
 package cynicdog.io.api;
 
+import cynicdog.io.data.Embedding;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
@@ -225,32 +226,5 @@ public class OllamaAPI {
                 });
 
         return promise.future();
-    }
-
-    public static class Embedding {
-
-        private List<Float> latentScores; // Change to List<Float>
-        private String document;
-
-        public Embedding(List<Float> latentScores, String document) {
-            this.latentScores = latentScores;
-            this.document = document;
-        }
-
-        public List<Float> getLatentScores() {
-            return latentScores;
-        }
-
-        public void setLatentScores(List<Float> latentScores) {
-            this.latentScores = latentScores;
-        }
-
-        public String getDocument() {
-            return document;
-        }
-
-        public void setDocument(String document) {
-            this.document = document;
-        }
     }
 }

@@ -1,0 +1,8 @@
+syntax = "proto3";
+
+package cynicdog.io;
+
+message Embedding {
+  repeated float latentScores = 1;
+  string document = 2;
+}

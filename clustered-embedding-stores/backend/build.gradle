@@ -8,12 +8,12 @@ group = 'cynicdog.io'
 version = '1.0-SNAPSHOT'
 
 ext {
-    vertxVersion = '4.0.0'
+    vertxVersion = '4.5.11'
 }
 
 java {
     toolchain {
-        languageVersion = JavaLanguageVersion.of(20)
+        languageVersion = JavaLanguageVersion.of(20) // You can keep Java version as needed
     }
 }
 
@@ -26,6 +26,15 @@ dependencies {
     implementation("io.vertx:vertx-web-client:${vertxVersion}")
     implementation("io.vertx:vertx-infinispan:${vertxVersion}")
     implementation("io.vertx:vertx-health-check:${vertxVersion}")
+
+    // https://mvnrepository.com/artifact/org.infinispan.protostream/protostream
+    implementation 'org.infinispan.protostream:protostream:5.0.12.Final'
+
+    // https://mvnrepository.com/artifact/org.infinispan.protostream/protostream-processor
+    implementation 'org.infinispan.protostream:protostream-processor:5.0.5.Final'
+
+    // https://mvnrepository.com/artifact/org.infinispan.protostream/protostream-processor
+    annotationProcessor 'org.infinispan.protostream:protostream-processor:5.0.5.Final'
 
     testImplementation 'org.infinispan:infinispan-commons:15.0.0.Final'
     testImplementation platform('org.junit:junit-bom:5.10.0')
