@@ -29,6 +29,13 @@ public class Main extends AbstractVerticle {
 
     DefaultCacheManager cacheManager;
 
+    public Main() {
+    }
+
+    public Main(DefaultCacheManager cacheManager) {
+        this.cacheManager = cacheManager;
+    }
+
     @Override
     public void start() throws Exception {
 
@@ -109,13 +116,9 @@ public class Main extends AbstractVerticle {
 
         ClusterManager clusterManager = new InfinispanClusterManager(cacheManager);
 
-        // Create an instance of Main and set the cache manager and config
-        Main mainVerticle = new Main();
-        mainVerticle.cacheManager = cacheManager;
-
         // Deploy the verticle
         Vertx.clusteredVertx(new VertxOptions().setClusterManager(clusterManager))
-                .compose(v -> v.deployVerticle(mainVerticle))
+                .compose(v -> v.deployVerticle(new Main(cacheManager)))
                 .onFailure(Throwable::printStackTrace);
     }
 }
