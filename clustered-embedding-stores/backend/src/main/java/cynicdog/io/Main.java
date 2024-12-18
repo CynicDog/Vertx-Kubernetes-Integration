@@ -2,6 +2,7 @@
 package cynicdog.io;
 
 import cynicdog.io.api.OllamaAPI;
+import cynicdog.io.util.TriFunction;
 import io.vertx.core.*;
 import io.vertx.core.impl.logging.Logger;
 import io.vertx.core.impl.logging.LoggerFactory;
@@ -28,13 +29,14 @@ public class Main extends AbstractVerticle {
     private static final Logger logger = LoggerFactory.getLogger(Main.class);
 
     static DefaultCacheManager cacheManager;
+    WebClient client;
 
     @Override
     public void start() throws Exception {
 
         // Register router handlers
         Router router = Router.router(vertx);
-        WebClient client = WebClient.create(vertx);
+        client = WebClient.create(vertx);
 
         router.get("/health").handler(context -> context.response().end("OK"));
         router.get("/readiness").handler(HealthCheckHandler.createWithHealthChecks(HealthChecks
@@ -44,46 +46,10 @@ public class Main extends AbstractVerticle {
         var ollamaAPI = new OllamaAPI(WebClient.create(vertx), OLLAMA_HOST, OLLAMA_PORT);
 
         // Register consumers
-        vertx.eventBus().<String>consumer("embed", msg -> {
-            ollamaAPI.embed(client, msg.body(), cacheManager)
-                    .onComplete(res -> {
-                        if (res.succeeded()) {
-                            msg.reply(res.result());
-                        } else {
-                            msg.fail(500, "Failed to get response: " + res.cause().getMessage());;
-                        }
-                    });
-        });
-        vertx.eventBus().<String>consumer("evict", msg -> {
-            ollamaAPI.evict(client, msg.body(), cacheManager)
-                    .onComplete(res -> {
-                        if (res.succeeded()) {
-                            msg.reply(res.result());
-                        } else {
-                            msg.fail(500, "Failed to get response: " + res.cause().getMessage());;
-                        }
-                    });
-        });
-        vertx.eventBus().<String>consumer("evictAll", msg -> {
-            ollamaAPI.evictAll(client, msg.body(), cacheManager)
-                    .onComplete(res -> {
-                        if (res.succeeded()) {
-                            msg.reply(res.result());
-                        } else {
-                            msg.fail(500, "Failed to get response: " + res.cause().getMessage());;
-                        }
-                    });
-        });
-        vertx.eventBus().<String>consumer("generate", msg -> {
-            ollamaAPI.generate(client, msg.body(), cacheManager)
-                    .onComplete(res -> {
-                        if (res.succeeded()) {
-                            msg.reply(res.result());
-                        } else {
-                            msg.fail(500, "Failed to get response: " + res.cause().getMessage());;
-                        }
-                    });
-        });
+        registerConsumer(vertx, "embed", ollamaAPI::embed);
+        registerConsumer(vertx, "evict", ollamaAPI::evict);
+        registerConsumer(vertx, "evictAll", ollamaAPI::evictAll);
+        registerConsumer(vertx, "generate", ollamaAPI::generate);
 
         vertx.createHttpServer()
                 .requestHandler(router)
@@ -112,6 +78,19 @@ public class Main extends AbstractVerticle {
         Vertx.clusteredVertx(new VertxOptions().setClusterManager(clusterManager))
                 .compose(v -> v.deployVerticle(new Main()))
                 .onFailure(Throwable::printStackTrace);
+    }
+
+    private void registerConsumer(Vertx vertx, String address, TriFunction<WebClient, String, DefaultCacheManager, Future<String>> apiMethod) {
+        vertx.eventBus().<String>consumer(address, msg ->
+                apiMethod.apply(client, msg.body(), cacheManager)
+                        .onComplete(res -> {
+                            if (res.succeeded()) {
+                                msg.reply(res.result());
+                            } else {
+                                msg.fail(500, "Failed to get response: " + res.cause().getMessage());
+                            }
+                        })
+        );
     }
 }
 
