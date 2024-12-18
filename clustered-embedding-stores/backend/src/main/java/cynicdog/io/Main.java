@@ -62,6 +62,7 @@ public class Main extends AbstractVerticle {
         var globalConfig = new GlobalConfigurationBuilder()
                 .transport()
                 .defaultTransport()
+                // TODO: Jgroup configuration for k8s deployment
                 .build();
 
         // Configure default cache manager
@@ -83,7 +84,7 @@ public class Main extends AbstractVerticle {
     private void registerConsumer(Vertx vertx, String address, TriFunction<WebClient, String, DefaultCacheManager, Future<String>> apiMethod) {
         vertx.eventBus().<String>consumer(address, msg ->
                 apiMethod.apply(client, msg.body(), cacheManager)
-                        .onComplete(res -> {
+                        .onComplete(res -> {a
                             if (res.succeeded()) {
                                 msg.reply(res.result());
                             } else {
