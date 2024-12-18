@@ -32,11 +32,18 @@ public class Main extends AbstractVerticle {
 
     private DefaultCacheManager cacheManager;
     private Configuration cacheConfig;
+    private OllamaAPI ollamaAPI;
+
+    public Main(DefaultCacheManager cacheManager, Configuration cacheConfig) {
+
+        this.cacheManager = cacheManager;
+        this.cacheConfig = cacheConfig;
+
+        this.ollamaAPI = new OllamaAPI(Vertx.vertx(), OLLAMA_HOST, OLLAMA_PORT, cacheManager, cacheConfig);
+    }
 
     @Override
     public void start() throws Exception {
-
-        var ollamaAPI = new OllamaAPI(vertx, OLLAMA_HOST, OLLAMA_PORT, cacheManager, cacheConfig);
 
         // Register router handlers
         Router router = Router.router(vertx);
@@ -83,14 +90,9 @@ public class Main extends AbstractVerticle {
                 .encoding().value().mediaType(MediaType.APPLICATION_PROTOSTREAM_TYPE)
                 .build();
 
-        // Create an instance of Main and set the cache manager and config
-        Main mainVerticle = new Main();
-        mainVerticle.cacheManager = cacheManager;
-        mainVerticle.cacheConfig = cacheConfig;
-
         // Deploy the verticle
         Vertx.clusteredVertx(new VertxOptions().setClusterManager(clusterManager))
-                .compose(v -> v.deployVerticle(mainVerticle))
+                .compose(v -> v.deployVerticle(new Main(cacheManager, cacheConfig)))
                 .onFailure(Throwable::printStackTrace);
     }
 
