@@ -13,7 +13,6 @@ import io.vertx.ext.healthchecks.HealthChecks;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
-import org.infinispan.commons.marshall.JavaSerializationMarshaller;
 import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.global.GlobalConfigurationBuilder;
@@ -55,7 +54,6 @@ public class Main extends AbstractVerticle {
                 new GlobalConfigurationBuilder()
                         .transport()
                         .defaultTransport()
-//                        .addProperty("configurationFile", "default-configs/default-jgroups-kubernetes.xml")
                         .build()
         );
         cacheManager.defineConfiguration("__vertx.subs", new ConfigurationBuilder().clustering().cacheMode(CacheMode.REPL_SYNC).build());

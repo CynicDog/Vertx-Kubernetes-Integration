@@ -31,6 +31,9 @@ dependencies {
     implementation 'org.infinispan.protostream:protostream:5.0.12.Final'
 
     // https://mvnrepository.com/artifact/org.infinispan.protostream/protostream-processor
+    implementation 'org.infinispan.protostream:protostream-processor:5.0.5.Final'
+
+    // https://mvnrepository.com/artifact/org.infinispan.protostream/protostream-processor
     annotationProcessor 'org.infinispan.protostream:protostream-processor:5.0.5.Final'
 
     testImplementation 'org.infinispan:infinispan-commons:15.0.0.Final'

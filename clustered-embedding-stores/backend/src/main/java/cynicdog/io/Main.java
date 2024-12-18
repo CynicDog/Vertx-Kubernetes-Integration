@@ -11,9 +11,7 @@ import io.vertx.ext.cluster.infinispan.InfinispanClusterManager;
 import io.vertx.ext.healthchecks.HealthCheckHandler;
 import io.vertx.ext.healthchecks.HealthChecks;
 import io.vertx.ext.web.Router;
-import org.infinispan.commons.api.CacheContainerAdmin;
 import org.infinispan.commons.dataconversion.MediaType;
-import org.infinispan.commons.marshall.JavaSerializationMarshaller;
 import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
@@ -67,7 +65,7 @@ public class Main extends AbstractVerticle {
                 new GlobalConfigurationBuilder()
                         .transport()
                         .defaultTransport()
-//                        .addProperty("configurationFile", "default-configs/default-jgroups-kubernetes.xml")
+                        .serialization()
                         .build()
         );
 
@@ -82,7 +80,7 @@ public class Main extends AbstractVerticle {
         // Configure the cache for embeddings
         Configuration cacheConfig = new ConfigurationBuilder().clustering()
                 .cacheMode(CacheMode.REPL_SYNC)
-                .encoding().key().mediaType(MediaType.APPLICATION_PROTOSTREAM_TYPE)
+                .encoding().key().mediaType(MediaType.APPLICATION_OBJECT_TYPE)
                 .encoding().value().mediaType(MediaType.APPLICATION_PROTOSTREAM_TYPE)
                 .build();
 

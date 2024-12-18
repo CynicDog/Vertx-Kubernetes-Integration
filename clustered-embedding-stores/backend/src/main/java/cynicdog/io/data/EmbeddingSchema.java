@@ -1,9 +1,9 @@
 package cynicdog.io.data;
 
 import org.infinispan.protostream.GeneratedSchema;
-import org.infinispan.protostream.annotations.ProtoSchema;
+import org.infinispan.protostream.annotations.AutoProtoSchemaBuilder;
 
-@ProtoSchema(
+@AutoProtoSchemaBuilder(
         includeClasses = {Embedding.class},
         schemaFileName = "embedding.proto",
         schemaFilePath = "proto"
