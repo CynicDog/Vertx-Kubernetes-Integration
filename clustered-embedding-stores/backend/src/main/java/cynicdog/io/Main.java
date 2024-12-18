@@ -84,7 +84,7 @@ public class Main extends AbstractVerticle {
     private void registerConsumer(Vertx vertx, String address, TriFunction<WebClient, String, DefaultCacheManager, Future<String>> apiMethod) {
         vertx.eventBus().<String>consumer(address, msg ->
                 apiMethod.apply(client, msg.body(), cacheManager)
-                        .onComplete(res -> {a
+                        .onComplete(res -> {
                             if (res.succeeded()) {
                                 msg.reply(res.result());
                             } else {
