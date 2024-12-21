@@ -62,7 +62,7 @@ public class Main extends AbstractVerticle {
         var globalConfig = new GlobalConfigurationBuilder()
                 .transport()
                 .defaultTransport()
-                // TODO: Jgroup configuration for k8s deployment
+                .addProperty("configurationFile", "default-configs/default-jgroups-kubernetes.xml")
                 .build();
 
         // Configure default cache manager
